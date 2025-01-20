@@ -1,23 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import Entypo from '@expo/vector-icons/Entypo';
-import { useFonts, Poppins_400Regular, Poppins_700Bold } from "@expo-google-fonts/poppins";
-import { Inter_400Regular } from "@expo-google-fonts/inter";
-import AppLoading from "expo-app-loading";
+import { useFonts } from "@expo-google-fonts/poppins";
+import * as SplashScreen from 'expo-splash-screen'
 
 const Monitoreo = () => {
-
-    const [fontsLoaded] = useFonts({
-        Poppins_400Regular,
-        Poppins_700Bold,
-        Inter_400Regular,
+    //cargar fuente
+    /* const [fontsLoaded]=useFonts({
+        Inter: require("../fonts/Inter_24pt-Regular.ttf"),
+        Poppins: require("../fonts/poppins.bold.ttf"),
     });
+    //proceso de carga de fuente cuando el proyecto sea lanzado
+    useEffect(()=>{
+        async function prepare() {
+            await SplashScreen.preventAutoHideAsync();
+        }
+        prepare();
+    },[]);
+        
+    const onLayout = useCallback(async() => {
+        if (fontsLoaded){
+            await SplashScreen.hideAsync();
+        }
+    }, [fontsLoaded]);
+    if (!fontsLoaded) return null; */
 
     const [modalVisible, setModalVisible] = useState(false);
-
-    if (!fontsLoaded) {
-        return <AppLoading />;
-    }
 
     const handleShareLocation = () => {
         setModalVisible(true);

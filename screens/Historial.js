@@ -5,13 +5,11 @@ import moment from 'moment'; // moment en este caso se usa para la fecha y hora
 import 'moment/locale/es';
 moment.locale('es');
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import { Inter_400Regular } from '@expo-google-fonts/inter';
+import AppLoading from 'expo-app-loading';
 
 const Rutas = () => {
     const [rutas, setRutas] = useState([]);
-   /*  const [fontsLoaded] = useFonts({ */
-   /*      Poppins_400Regular, */
-   /*      Poppins_700Bold, */
-   /*  }); */
 
     useEffect(() => {
         const fetchRutas = async () => {
@@ -29,7 +27,7 @@ const Rutas = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={[styles.header, { fontFamily: 'Poppins_700Bold' }]}>Historial de Rutas</Text>
+            <Text style={[styles.header, { fontFamily: 'Poppins_700Bold' }]}>Historial</Text>
 
             <FlatList
                 data={rutas}
@@ -58,11 +56,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#4ba961', // color verde de fondo de pantalla
     },
     header: {
-        fontSize: 30,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 20,
-        textAlign: 'center',
+        fontSize: 38,
+        color: "#fffafa",
+        fontWeight: "bold",
+        marginTop: 10,
+        alignSelf: "flex-start",
+        marginLeft: 1,
+        marginBottom: 60
     },
     card: {
         backgroundColor: '#ffffff',
@@ -74,19 +74,19 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
-        alignItems: 'center',
     },
     dateText: {
-        fontSize: 14,
-        color: '#888',
+        fontSize: 25,
+        color: '#1c1919',
         marginBottom: 10,
-        textAlign: 'center',
+        textAlign: 'left',
+        fontWeight: 'bold',
     },
     cardText: {
         fontSize: 16,
         color: '#555',
         marginBottom: 5,
-        textAlign: 'center',
+        textAlign: 'left', // Alineación a la izquierda para los campos Estado y Distancia
     },
     emptyText: {
         fontSize: 18,
@@ -97,6 +97,3 @@ const styles = StyleSheet.create({
 });
 
 export default Rutas;
-
-
-    

@@ -4,8 +4,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 //fuentes
 import { useFonts } from "expo-font";
 import * as SplashScreen from 'expo-splash-screen'
-//npx expo install @expo-google-fonts/inter expo-font expo-splash-screen
-//npx expo install expo-font
+import { useAuth } from '../context/AuthContext'; 
 
 const PerfilUsuario = ({ navigation }) => {
     //cargar fuente
@@ -26,6 +25,11 @@ const PerfilUsuario = ({ navigation }) => {
         }
     }, [fontsLoaded]);
     if (!fontsLoaded) return null;
+
+    const { logout } = useAuth();
+    const handleLogout = () => {
+        logout();
+    };
 
     return (
         <View style={styles.container}>
@@ -50,6 +54,9 @@ const PerfilUsuario = ({ navigation }) => {
             
             <TouchableOpacity style={styles.botoncambiar} onPress={() => navigation.navigate('ChangePassword')}>
             <Text style={{color:"#fffafa", fontFamily:"Inter"}}>Cambiar Contraseña</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.botoncambiar} onPress={(handleLogout)}>
+                <Text style={{color:"#fffafa", fontFamily:"Inter"}}>Cerrar Sesión</Text>
             </TouchableOpacity>
             </View>
             

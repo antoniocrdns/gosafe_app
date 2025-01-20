@@ -158,7 +158,7 @@ function MainTabs() {
                     tabBarIcon: ({ color, size }) => (
                         <FontAwesome6 name="clock-rotate-left" size={size} color={color} />
                     ),
-                    headerTitle: 'Historial',
+                    headerShown: false
                 }}
             />
             <Tab.Screen
