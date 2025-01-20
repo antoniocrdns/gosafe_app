@@ -9,9 +9,9 @@ import * as SplashScreen from 'expo-splash-screen'
 
 const PerfilUsuario = ({ navigation }) => {
     //cargar fuente
-   /*  const [fontsLoaded]=useFonts({ */
-   /*      Inter: require("../assets/fonts/Inter_24pt-Regular.ttf"), */
-   /*  }); */
+    const [fontsLoaded]=useFonts({
+        Inter: require("../fonts/Inter_24pt-Regular.ttf"),
+    });
     //proceso de carga de fuente cuando el proyecto sea lanzado
     useEffect(()=>{
         async function prepare() {
