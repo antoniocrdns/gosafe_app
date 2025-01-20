@@ -1,14 +1,12 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';  // Opcional para persistir el estado
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Crear el contexto
 const AuthContext = createContext();
 
-// Crear el proveedor del contexto
+
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // Efecto para cargar el estado de autenticación desde AsyncStorage
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
@@ -24,16 +22,14 @@ export const AuthProvider = ({ children }) => {
         checkAuthStatus();
     }, []);
 
-    // Función para iniciar sesión
     const login = async () => {
         setIsAuthenticated(true);
-        await AsyncStorage.setItem('isAuthenticated', 'true');  // Guardar el estado
+        await AsyncStorage.setItem('isAuthenticated', 'true'); 
     };
 
-    // Función para cerrar sesión
     const logout = async () => {
         setIsAuthenticated(false);
-        await AsyncStorage.removeItem('isAuthenticated');  // Eliminar el estado
+        await AsyncStorage.removeItem('isAuthenticated');
     };
 
     return (
@@ -43,5 +39,4 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// Hook para consumir el contexto
 export const useAuth = () => useContext(AuthContext);
