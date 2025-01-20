@@ -8,10 +8,10 @@ import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-font
 
 const Rutas = () => {
     const [rutas, setRutas] = useState([]);
-    const [fontsLoaded] = useFonts({
-        Poppins_400Regular,
-        Poppins_700Bold,
-    });
+   /*  const [fontsLoaded] = useFonts({ */
+   /*      Poppins_400Regular, */
+   /*      Poppins_700Bold, */
+   /*  }); */
 
     useEffect(() => {
         const fetchRutas = async () => {
