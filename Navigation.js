@@ -136,7 +136,7 @@ function MainTabs() {
                     tabBarIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="map-marker-path" size={30} color={color} />
                     ),
-                    headerTitle: 'Monitorear',
+                    headerShown: false
                 }}
             />
             <Tab.Screen

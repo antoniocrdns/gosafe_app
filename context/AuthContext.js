@@ -1,31 +1,31 @@
- import React, {createContext, useState, useContext, useEffect} from 'react';
- import AsyncStorage from '@react-native-async-storage/async-storage'; //opcional para persistir
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';  // Opcional para persistir el estado
 
- //crear el contexto
- const AuthContext = createContext();
+// Crear el contexto
+const AuthContext = createContext();
 
- //crear el proveedor del contexto
- export const AuthProvider = ({ children }) => {
+// Crear el proveedor del contexto
+export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    //efecto para cargar el estado de autentificacion desde AsyncStore
+    // Efecto para cargar el estado de autenticación desde AsyncStorage
     useEffect(() => {
-        const checkAuthStatus = async() => {
+        const checkAuthStatus = async () => {
             try {
                 const storedAuthStatus = await AsyncStorage.getItem('isAuthenticated');
-                if (storedAuthStatus == 'true') {
+                if (storedAuthStatus === 'true') {
                     setIsAuthenticated(true);
                 }
-            }catch (e) {
-                console.error('Error loading authentication status', e);
+            } catch (e) {
+                console.error('Error loading authentication status:', e);
             }
         };
-        checkAuthStatus();
 
-    },[]);
- 
- // Función para iniciar sesión
-const login = async () => {
+        checkAuthStatus();
+    }, []);
+
+    // Función para iniciar sesión
+    const login = async () => {
         setIsAuthenticated(true);
         await AsyncStorage.setItem('isAuthenticated', 'true');  // Guardar el estado
     };
@@ -41,7 +41,7 @@ const login = async () => {
             {children}
         </AuthContext.Provider>
     );
- };
+};
 
 // Hook para consumir el contexto
 export const useAuth = () => useContext(AuthContext);
