@@ -1,13 +1,29 @@
 import React, { useCallback, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-//fuentes
-import { useFonts } from "expo-font";
-import * as SplashScreen from 'expo-splash-screen'
+import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import { Inter_400Regular } from '@expo-google-fonts/inter';
+import AppLoading from 'expo-app-loading';
 import { useAuth } from '../context/AuthContext'; 
 
+
+/* //fuentes
+import { useFonts } from "expo-font";
+import * as SplashScreen from 'expo-splash-screen'
+ */
 const PerfilUsuario = ({ navigation }) => {
-    //cargar fuente
+    let [fontsLoaded] = useFonts({
+        Poppins_400Regular,
+        Poppins_700Bold,
+        Inter_400Regular,
+    });
+    
+    if (!fontsLoaded) {
+        return <AppLoading />;
+    }
+    
+
+    /* //cargar fuente
     const [fontsLoaded]=useFonts({
         Inter: require("../fonts/Inter_24pt-Regular.ttf"),
     });
@@ -25,11 +41,11 @@ const PerfilUsuario = ({ navigation }) => {
         }
     }, [fontsLoaded]);
     if (!fontsLoaded) return null;
-
+*/
     const { logout } = useAuth();
     const handleLogout = () => {
         logout();
-    };
+    }; 
 
     return (
         <View style={styles.container}>
@@ -53,10 +69,10 @@ const PerfilUsuario = ({ navigation }) => {
             </View>
             
             <TouchableOpacity style={styles.botoncambiar} onPress={() => navigation.navigate('ChangePassword')}>
-            <Text style={{color:"#fffafa", fontFamily:"Inter"}}>Cambiar Contraseña</Text>
+            <Text style={{color:"#fffafa", fontFamily:"Inter_400Regular"}}>Cambiar Contraseña</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.botoncambiar} onPress={(handleLogout)}>
-                <Text style={{color:"#fffafa", fontFamily:"Inter"}}>Cerrar Sesión</Text>
+            <TouchableOpacity style={styles.botoncerrar} onPress={(handleLogout)}>
+                <Text style={{color:"#fffafa", fontFamily:"Inter_400Regular"}}>Cerrar Sesión</Text>
             </TouchableOpacity>
             </View>
             
@@ -95,12 +111,27 @@ const styles = StyleSheet.create({
         elevation: 4,
         
     },
+    botoncerrar:{
+        backgroundColor:"#ff3131",
+        width: 200,
+        height: 40,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+        
+    },
+
     icontextcontainer:{
         flexDirection:"row",
     },
     textInfo:{
         padding:10,
-        fontFamily:"Inter"
+        fontFamily:"Inter_400Regular"
     },
 
 })
