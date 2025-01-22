@@ -1,11 +1,20 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from "react-native";
 import React, { useCallback, useEffect } from "react";
-
-import { useFonts } from "expo-font";
-import * as SplashScreen from 'expo-splash-screen'
-
+import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import { Inter_400Regular } from '@expo-google-fonts/inter';
+import AppLoading from 'expo-app-loading';
+/* import * as SplashScreen from 'expo-splash-screen'*/
 const ChangePassword = () => {
-        //cargar fuente
+    let [fontsLoaded] = useFonts({
+        Poppins_400Regular,
+        Poppins_700Bold,
+        Inter_400Regular,
+    });
+    
+    if (!fontsLoaded) {
+        return <AppLoading />;
+    }
+        /* //cargar fuente
         const [fontsLoaded]=useFonts({
             Inter: require("../fonts/Inter_24pt-Regular.ttf"),
         });
@@ -23,7 +32,7 @@ const ChangePassword = () => {
             }
         }, [fontsLoaded]);
         if (!fontsLoaded) return null;
-    
+     */
 
 
     return (
@@ -44,7 +53,7 @@ const ChangePassword = () => {
         </View>
 
         <TouchableOpacity style={styles.botoncambiar} >
-            <Text style={{color:"#fffafa", fontFamily:"Inter"}}>Cambiar Contraseña</Text>
+            <Text style={{color:"#fffafa", fontFamily:"Inter_400Regular"}}>Cambiar Contraseña</Text>
         </TouchableOpacity>
 
     </View>
@@ -61,7 +70,8 @@ const styles = StyleSheet.create({
     inputcontainer: {
         backgroundColor: '#e9e9e9',
         width: 220,
-        marginTop:50
+        marginTop:50,
+        borderRadius: 5
     },
     botoncambiar:{
         backgroundColor:"#67a0ff",
@@ -79,7 +89,7 @@ const styles = StyleSheet.create({
         
     },
     input:{
-        fontFamily:"Inter"
+        fontFamily:"Inter_400Regular"
 
     }
 
