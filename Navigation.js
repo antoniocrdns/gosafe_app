@@ -117,15 +117,18 @@ function MainTabs() {
             screenOptions={{
                 tabBarActiveTintColor: 'black',
                 tabBarInactiveTintColor: 'gray',
-                headerRight: () => (
-                    <Ionicons
-                        name="log-out"
-                        size={25}
-                        color="black"
-                        onPress={handleLogout}
-                        style={{ marginRight: 15 }}
-                    />
-                ),
+                tabBarStyle: {
+                    height: 80, // Ajusta el margen superior de la barra
+                    alignItems: 'center', // Centra los elementos en la barra
+                },
+                tabBarLabelStyle: {
+                    fontSize: 12, // Tamaño del texto
+                    textAlign: 'center', // Centra el texto
+                },
+                tabBarIconStyle: {
+                    size: 30, // Ajusta el tamaño del ícono
+                    alignSelf: 'center', // Centra el ícono
+                },
             }}
         >
             <Tab.Screen
@@ -134,7 +137,7 @@ function MainTabs() {
                 options={{
                     tabBarLabel: 'Monitorear',
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="map-marker-path" size={30} color={color} />
+                        <MaterialCommunityIcons name="map-marker-path" size={size} color={color} />
                     ),
                     headerShown: false
                 }}
@@ -175,6 +178,7 @@ function MainTabs() {
         </Tab.Navigator>
     );
 }
+
 
 // Main Navigation
 export default function Navigation() {

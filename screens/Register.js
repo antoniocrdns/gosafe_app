@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, ScrollView,Platform,} from "react-native";
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
 import AppLoading from "expo-app-loading";
@@ -11,9 +11,41 @@ const Register = () => {
     Poppins_400Regular,
   });
 
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
   if (!fontsLoaded) {
     return <AppLoading />;
   }
+
+  const emailValidator = (email) => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  const handleRegister = () => {
+    if (!name || !email || !phone || !password) {
+      setError('Todos los campos son obligatorios.');
+      return;
+    }
+    if (!emailValidator(email)) {
+      setError('Por favor ingresa un correo electrónico válido.');
+      return;
+    }
+
+    setError('');
+    alert('Registro exitoso!');
+    
+    setName('');
+    setEmail('');
+    setPhone('');
+    setPassword('');
+
+    navigation.navigate('Login');
+  };
 
   return (
     <KeyboardAvoidingView
@@ -23,30 +55,54 @@ const Register = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.innerContainer}>
           <Text style={styles.title}>Registrar</Text>
+          
+          {/* Nombre */}
           <TextInput
             style={[styles.input, { fontFamily: "Poppins_400Regular" }]}
             placeholder="Nombre"
             placeholderTextColor="#888"
+            value={name}
+            onChangeText={setName}
           />
+          
+          {/* Correo */}
           <TextInput
             style={[styles.input, { fontFamily: "Poppins_400Regular" }]}
             placeholder="Correo"
             placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
           />
+          
+          {/* Teléfono */}
           <TextInput
             style={[styles.input, { fontFamily: "Poppins_400Regular" }]}
             placeholder="Teléfono"
             placeholderTextColor="#888"
+            value={phone}
+            onChangeText={setPhone}
             keyboardType="numeric"
           />
+          
+          {/* Contraseña */}
           <TextInput
             style={[styles.input, { fontFamily: "Poppins_400Regular" }]}
             placeholder="Contraseña"
             placeholderTextColor="#888"
             secureTextEntry={true}
+            value={password}
+            onChangeText={setPassword}
           />
+
+          {/* Mensaje de error */}
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : null}
+
           <View style={styles.spacer} />
-          <TouchableOpacity style={styles.registerButton}>
+          
+          {/* Botón de registro */}
+          <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
             <Text style={styles.registerButtonText}>Registrar</Text>
           </TouchableOpacity>
 
@@ -114,13 +170,18 @@ const styles = StyleSheet.create({
   },
   loginContainer: {
     flexDirection: "row",
-    marginTop: 50, //separacin del texto de inicio de sesion
+    marginTop: 50, //separacion del texto de inicio de sesion
   },
   link: {
     color: "#67a0ff",
     textDecorationLine: "underline",
     fontFamily: "Poppins_400Regular",
   },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    fontFamily: "Poppins_400Regular",
+  }
 });
 
 export default Register;

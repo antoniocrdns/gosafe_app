@@ -1,29 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import Entypo from '@expo/vector-icons/Entypo';
-import { useFonts } from "@expo-google-fonts/poppins";
-import * as SplashScreen from 'expo-splash-screen'
+import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import { Inter_400Regular } from '@expo-google-fonts/inter';
+import AppLoading from 'expo-app-loading';
+
 
 const Monitoreo = () => {
-    //cargar fuente
-    /* const [fontsLoaded]=useFonts({
-        Inter: require("../fonts/Inter_24pt-Regular.ttf"),
-        Poppins: require("../fonts/poppins.bold.ttf"),
-    });
-    //proceso de carga de fuente cuando el proyecto sea lanzado
-    useEffect(()=>{
-        async function prepare() {
-            await SplashScreen.preventAutoHideAsync();
-        }
-        prepare();
-    },[]);
-        
-    const onLayout = useCallback(async() => {
-        if (fontsLoaded){
-            await SplashScreen.hideAsync();
-        }
-    }, [fontsLoaded]);
-    if (!fontsLoaded) return null; */
 
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -39,6 +22,17 @@ const Monitoreo = () => {
     const handleCancel = () => {
         setModalVisible(false);
     };
+
+    let [fontsLoaded] = useFonts({
+        Poppins_400Regular,
+        Poppins_700Bold,
+        Inter_400Regular,
+    });
+
+    if (!fontsLoaded) {
+        return <AppLoading />;
+    }
+
 
     return (
         <View style={styles.container}>
@@ -67,7 +61,7 @@ const Monitoreo = () => {
 
                     <TouchableOpacity style={styles.shareButton} onPress={handleShareLocation}>
                         <Text style={styles.shareButtonText}>Compartir</Text>
-                        <Text style={styles.shareButtonText}>ubicación</Text>
+                        <Text style={styles.shareButtonText}>Ubicación</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -156,7 +150,7 @@ const styles = StyleSheet.create({
         marginLeft: 20
     },
     timeLabel: {
-        //fontFamily: Inter_400Regular,
+        fontFamily: "Inter_400Regular",
         fontSize: 18,
         color: "#1c1919",
         marginBottom: -8,
@@ -164,6 +158,7 @@ const styles = StyleSheet.create({
     timeValue: {
         fontSize: 40,
         fontWeight: "bold",
+        fontFamily: "Poppins_700Bold",
         color: "#1c1919",
     },
     shareButton: {
@@ -176,13 +171,13 @@ const styles = StyleSheet.create({
         width: 170,
     },
     shareButtonText: {
-        //fontFamily: Poppins_700Bold,
+        fontFamily: "Poppins_700Bold",
         color: "#fffafa",
         fontSize: 16,
     },
     modalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(103, 160, 255, 0.5)",
+        backgroundColor: "rgba(28, 25, 25, 0.5)",
         justifyContent: "center",
         alignItems: "center",
     },
@@ -201,7 +196,7 @@ const styles = StyleSheet.create({
     modalText: {
         fontSize: 26,
         marginTop: 30,
-        marginBottom: 80,
+        marginBottom: 50,
         textAlign: "center",
     },
     modalButtons: {
@@ -220,6 +215,7 @@ const styles = StyleSheet.create({
     noButtonText: {
         color: "#fffafa",
         fontSize: 16,
+        fontFamily: "Poppins_700bold",
         fontWeight: "bold",
     },
     yesButton: {
@@ -233,14 +229,15 @@ const styles = StyleSheet.create({
     yesButtonText: {
         color: "#fffafa",
         fontSize: 16,
+        fontFamily: "Poppins_700bold",
         fontWeight: "bold",
     },
     titulo: {
-        //fontFamily: Poppins_400Regular,
+        fontFamily: "Poppins_700Bold",
         fontSize: 38,
         color: "#fffafa",
         fontWeight: "bold",
-        marginTop: 10,
+        marginTop: 20,
         alignSelf: "flex-start",
         marginLeft: 1,
     }

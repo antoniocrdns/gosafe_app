@@ -25,6 +25,16 @@ const Rutas = () => {
         fetchRutas();
     }, []);
 
+    let [fontsLoaded] = useFonts({
+        Poppins_400Regular,
+        Poppins_700Bold,
+        Inter_400Regular,
+    });
+
+    if (!fontsLoaded) {
+        return <AppLoading />;
+    }
+
     return (
         <View style={styles.container}>
             <Text style={[styles.header, { fontFamily: 'Poppins_700Bold' }]}>Historial</Text>
@@ -53,13 +63,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#4ba961', // color verde de fondo de pantalla
+        backgroundColor: '#4ba961',
     },
     header: {
         fontSize: 38,
         color: "#fffafa",
         fontWeight: "bold",
-        marginTop: 10,
+        marginTop: 20,
         alignSelf: "flex-start",
         marginLeft: 1,
         marginBottom: 60
@@ -86,13 +96,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#555',
         marginBottom: 5,
-        textAlign: 'left', // Alineación a la izquierda para los campos Estado y Distancia
+        textAlign: 'left',
+        fontFamily: "Inter_400Regular" 
     },
     emptyText: {
         fontSize: 18,
         color: '#888',
         textAlign: 'center',
         marginTop: 50,
+        fontFamily: "Inter_400Regular"
     },
 });
 
