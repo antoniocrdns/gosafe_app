@@ -9,6 +9,11 @@ import { useAuth } from '../context/AuthContext';
 
 //fuentes
 const PerfilUsuario = ({ navigation }) => {
+    const { logout } = useAuth();
+    const handleLogout = () => {
+        logout();
+    }; 
+
     let [fontsLoaded] = useFonts({
         Poppins_400Regular,
         Poppins_700Bold,
@@ -19,11 +24,6 @@ const PerfilUsuario = ({ navigation }) => {
         return <AppLoading />;
     }
     
-    const { logout } = useAuth();
-    const handleLogout = () => {
-        logout();
-    }; 
-
     return (
         <View style={styles.container}>
             
