@@ -4,11 +4,51 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular } from '@expo-google-fonts/inter';
 import AppLoading from 'expo-app-loading';
-
+import Mapview, { Marker, Polyline } from 'react-native-maps';
+import * as Location from 'expo-location';
+import MapViewDirections from 'react-native-maps-directions';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const Monitoreo = () => {
 
     const [modalVisible, setModalVisible] = useState(false);
+
+    //api de google en caso de no funcionar, borre la api y ponga otra
+    const GOOGLE_MAP_KEY = "AIzaSyAovdzv-dciIhuLNI_SlGg8Bz6msikuoo0"
+
+
+    //coordenadas de inicio para el mapa
+    const [origin, setOrigin] = React.useState({
+        latitude: 32.436087,
+        longitude: -114.759567
+    });
+    const [destination, setDestination] = React.useState({
+        latitude: 32.449849,
+        longitude: -114.758752,
+    });
+
+    
+    //permisos para obtener ubicacion
+    React.useEffect(() => {
+        getLocationPermission();
+    }, []
+    )
+    async function getLocationPermission() {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+            alert("Permission denied");
+            return;
+        }
+        let location = await Location.getCurrentPositionAsync({});
+        const current = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+        };
+        setOrigin(current);
+    }
+
+
+
 
     const handleShareLocation = () => {
         setModalVisible(true);
@@ -34,6 +74,7 @@ const Monitoreo = () => {
     }
 
 
+
     return (
         <View style={styles.container}>
             <Text style={styles.titulo}>Monitorear</Text>
@@ -41,17 +82,52 @@ const Monitoreo = () => {
                 <View style={styles.destinationContainer}>
                     <View style={styles.iconContainer}>
                         <Entypo name="location-pin" size={24} color="white" />
-                    </View>
-                    <TextInput style={styles.input} placeholder="Destino" />
+                    
+                    </View >
+                    <GooglePlacesAutocomplete
+                        placeholder='Search'
+                        onPress={(data, details = null) => {
+                            console.log(data, details);
+                        }}
+                        query={{
+                            key: GOOGLE_MAP_KEY,
+                            language: 'en',
+                        }}
+                    />
+                    
                 </View>
 
-                {/* Mapa (placeholder) */}
-                <Image
-                    source={{
-                        uri: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmiracomohacerlo.com%2Fwp-content%2Fuploads%2F2016%2F01%2Fgoogle-maps-2.gif&f=1&nofb=1&ipt=a88a12f6659180afae461105a8ef389948842430faa37e722f797d332c54f450&ipo=images",
-                    }}
-                    style={styles.map}
-                />
+
+
+                {/* Mapa */}
+                <Mapview style={styles.map}
+                    initialRegion={{
+                        latitude: origin.latitude,
+                        longitude: origin.longitude,
+                        latitudeDelta: 0.09,
+                        longitudeDelta: 0.04
+                    }}>
+
+                    <Marker
+                        draggable
+                        coordinate={origin}
+                        onDragEnd={(direction) => setOrigin(direction.nativeEvent.coordinate)}
+                    />
+
+                    <Marker
+                        draggable
+                        coordinate={destination}
+                        onDragEnd={(direction) => setDestination(direction.nativeEvent.coordinate)}
+                    />
+                    <MapViewDirections
+                        origin={origin}
+                        destination={destination}
+                        apikey={GOOGLE_MAP_KEY}
+                        strokeColor='blue'
+                        strokeWidth={5}
+                    />
+
+                </Mapview>
 
                 <View style={styles.bottomContainer}>
                     <View style={styles.timeContainer}>
@@ -107,6 +183,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         elevation: 2,
+        
+        
     },
     destinationContainer: {
         marginBottom: 16,
@@ -156,7 +234,7 @@ const styles = StyleSheet.create({
         marginBottom: -8,
     },
     timeValue: {
-        fontSize: 40,
+        fontSize: 30,
         fontWeight: "bold",
         fontFamily: "Poppins_700Bold",
         color: "#1c1919",
@@ -240,7 +318,40 @@ const styles = StyleSheet.create({
         marginTop: 20,
         alignSelf: "flex-start",
         marginLeft: 1,
-    }
+    },
+    googlePlacesText: {
+        color: "white",
+        fontSize: 20,
+        fontWeight: "bold",
+      },
+      textInput: {
+        borderWidth: 1,
+        borderColor: "#ccc",
+        height: 50,
+        borderRadius: 25,
+        paddingLeft: 25,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
+      },
+      inputContainer: {
+        width: "95%",
+      },
+      textInputFocused: {
+        borderWidth: 1,
+        borderColor: "darkblue",
+        height: 50,
+        borderRadius: 25,
+        paddingLeft: 25,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+
 });
 
 export default Monitoreo;
