@@ -1,0 +1,29 @@
+npx expo install @expo-google-fonts/inter expo-font expo-splash-screen
+
+npx expo install expo-font
+
+npm install @react-native-community/cli-server-api
+
+npm install -g expo-cli  
+
+expo install expo-font 
+
+npm install @expo-google-fonts/poppins 
+
+npm install @expo-google-fonts/inter  
+
+expo install expo-app-loading
+
+npx expo install react-dom react-native-web @expo/metro-runtime
+
+npm install --save @react-native-community/masked-view
+
+npm install react-native-safe-area-context
+
+yarn add react-native-google-places-autocomplete
+
+npx expo install expo-location dotenv react-native-maps react-native-maps-directions
+
+npm install --save react-native-gesture-handler react-native-reanimated react-native-screens  
+
+npm install react-native-get-random-values
