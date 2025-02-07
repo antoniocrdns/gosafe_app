@@ -1,26 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment'; // moment en este caso se usa para la fecha y hora
 import 'moment/locale/es';
 moment.locale('es');
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular } from '@expo-google-fonts/inter';
 import AppLoading from 'expo-app-loading';
+import api from '../utils/api';
 
 const Rutas = () => {
     const [rutas, setRutas] = useState([]);
 
     useEffect(() => {
         const fetchRutas = async () => {
-            const storedRutas = JSON.parse(await AsyncStorage.getItem('rutas')) || [];
-
-            const exampleRutas = [
-                {status: 'Finalizado', distance: '5.2 Km', date: new Date()},
-                {status: 'Cancelado', distance: '3.2 Km', date: new Date()},
-                {status: 'Finalizado', distance: '9.2 Km', date: new Date()},
-            ];
-            setRutas(storedRutas.length > 0 ? storedRutas : exampleRutas);
+            try {
+                const response = await api.get('/rutas'); 
+                setRutas(response.data);
+            } catch (error) {
+                console.error('Error fetching rutas:', error);
+            }
         };
         fetchRutas();
     }, []);

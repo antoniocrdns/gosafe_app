@@ -179,7 +179,6 @@ function MainTabs() {
     );
 }
 
-
 // Main Navigation
 export default function Navigation() {
     return (

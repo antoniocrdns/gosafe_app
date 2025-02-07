@@ -1,16 +1,18 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular } from '@expo-google-fonts/inter';
 import AppLoading from 'expo-app-loading';
+import api from '../utils/api'; // Importa el módulo api
+import { useAuth } from '../context/AuthContext';
 
 const ChangePassword = () => {
-
+    const { user } = useAuth(); // Obtén el usuario del contexto de autenticación
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleChangePassword = () => {
+    const handleChangePassword = async () => {
         if (!password) {
             setError('El campo de contraseña no puede estar vacío.');
             return;
@@ -24,12 +26,19 @@ const ChangePassword = () => {
             setError('La contraseña debe tener al menos 8 caracteres.');
             return;
         }
-        
-        setError('');
-        alert('Contraseña cambiada con éxito!');
 
-        setPassword('')
-        setConfirmPassword('')
+        try {
+            const response = await api.put(`/users/${user.id}/password`, { password });
+            if (response.data.success) {
+                alert('Contraseña cambiada con éxito!');
+                setPassword('');
+                setConfirmPassword('');
+            } else {
+                setError(response.data.message);
+            }
+        } catch (error) {
+            setError('Error al cambiar la contraseña. Por favor, inténtelo de nuevo.');
+        }
     };
 
     let [fontsLoaded] = useFonts({

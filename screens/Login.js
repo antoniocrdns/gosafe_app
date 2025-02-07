@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
-import AppLoading from "expo-app-loading";
+import * as SplashScreen from 'expo-splash-screen';
+import api from '../utils/api';
+
+SplashScreen.preventAutoHideAsync();
 
 const Login = ({ navigation }) => {
     const { login } = useAuth();
@@ -11,21 +14,28 @@ const Login = ({ navigation }) => {
         Poppins_400Regular,
     });
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    useEffect(() => {
+        if (fontsLoaded) {
+            SplashScreen.hideAsync();
+        }
+    }, [fontsLoaded]);
+
+    const [correo, setCorreo] = useState('');
+    const [contraseña, setContraseña] = useState('');
 
     if (!fontsLoaded) {
-        return <AppLoading />;
+        return null;
     }
 
     const validateForm = () => {
-        if (!email || !password) {
+        console.log('Validando formulario');
+        if (!correo || !contraseña) {
             Alert.alert("Error", "Por favor, complete todos los campos.");
             return false;
         }
 
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailPattern.test(email)) {
+        if (!emailPattern.test(correo)) {
             Alert.alert("Error", "Por favor, ingrese un correo válido.");
             return false;
         }
@@ -33,9 +43,32 @@ const Login = ({ navigation }) => {
         return true;
     };
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
+        console.log('Intentando iniciar sesión');
         if (validateForm()) {
-            login();
+            try {
+                const loginData = { correo, contraseña };
+                const apiUrl = '/auth/login/pasajero';
+                console.log('Enviando datos a la API:', loginData);
+                console.log('URL de la API:', apiUrl);
+
+                const response = await api.post(apiUrl, loginData);
+                console.log('Respuesta de la API:', response.data);
+                if (response.data.success) {
+                    console.log('Inicio de sesión exitoso');
+                    login(response.data.user); // Pasa los datos del usuario a la función login
+                    console.log('Redirigiendo a Monitoreo');
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Monitoreo' }],
+                    }); // Redirige a la pantalla Monitoreo y resetea la navegación
+                } else {
+                    Alert.alert("Error", response.data.message);
+                }
+            } catch (error) {
+                console.error('Error al iniciar sesión:', error);
+                Alert.alert("Error", "Error al iniciar sesión. Por favor, inténtelo de nuevo.");
+            }
         }
     };
 
@@ -52,16 +85,16 @@ const Login = ({ navigation }) => {
                     style={[styles.input, { fontFamily: "Poppins_400Regular" }]}
                     placeholder="Correo"
                     placeholderTextColor="#888"
-                    value={email}
-                    onChangeText={setEmail}
+                    value={correo}
+                    onChangeText={setCorreo}
                 />
                 <TextInput
                     style={[styles.input, { fontFamily: "Poppins_400Regular" }]}
                     placeholder="Contraseña"
                     placeholderTextColor="#888"
                     secureTextEntry={true}
-                    value={password}
-                    onChangeText={setPassword}
+                    value={contraseña}
+                    onChangeText={setContraseña}
                 />
                 <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
                     <Text style={styles.loginButtonText}>Iniciar sesión</Text>
