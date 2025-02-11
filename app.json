@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "gosafe_app",
+    "slug": "gosafe_app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/gosafe_logo.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/gosafe_logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/gosafe_logo.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/gosafe_logo.png"
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}
