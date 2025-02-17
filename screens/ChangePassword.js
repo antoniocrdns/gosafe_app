@@ -28,7 +28,7 @@ const ChangePassword = () => {
         }
 
         try {
-            const response = await api.put(`/pasajeros/${user.id}/`, { contraseña });
+            const response = await api.put(`/pasajeros/password/${user.id}/`, { contraseña });
             if (response.data.message === "Pasajero actualizado") {
                 alert('Contraseña cambiada con éxito!');
                 setContraseña('');

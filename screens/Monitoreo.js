@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Linking } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Share, Alert } from "react-native";
 import * as Location from 'expo-location';
-import { Sharing } from 'expo';
 import Entypo from '@expo/vector-icons/Entypo';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import AppLoading from 'expo-app-loading';
@@ -23,8 +22,11 @@ const Monitoreo = () => {
     const [distance, setDistance] = useState("0.00");
     const [direccionInicio, setDireccionInicio] = useState("");
     const [direccionFin, setDireccionFin] = useState("");
+    const [viajeData, setViajeData] = useState(null);
 
     const { user } = useAuth();
+
+    const searchRef = useRef(null);
 
     const GOOGLE_MAP_KEY2 = "AIzaSyAvSJwfk_of_K86P7cy4jAiaKuwXJ7925E";
 
@@ -65,7 +67,7 @@ const Monitoreo = () => {
             setDireccionInicio(data.routes[0].legs[0].start_address);
             setDireccionFin(data.routes[0].legs[0].end_address);
     
-            const viajeData = {
+            const tripData = {
                 direccion_inicio: data.routes[0].legs[0].start_address,
                 direccion_fin: data.routes[0].legs[0].end_address,
                 fecha: new Date().toISOString(),
@@ -73,20 +75,10 @@ const Monitoreo = () => {
                 distancia_km: distanceInKm,
                 id_pasajero: user.id,
             };
+
+            setViajeData(tripData);
     
             console.log("Datos listos para enviar a la API:", viajeData)
-
-            try {
-                console.log('Intentado enviar datos a la API...')
-                const response = await api.post(`/viajes/pasajero`, viajeData);
-                if (response.data.message === 'Viaje creado') {
-                    alert('Viaje enviado con éxito!');
-                } else {
-                    setError(response.data.message);
-                }
-            } catch (error) {
-                setError('Error al enviar los datos, intentelo de nuevo.');
-            }
     
         } catch (error) {
             console.error("Error al obtener los datos del viaje:", error);
@@ -106,18 +98,41 @@ const Monitoreo = () => {
     };
 
     const handleConfirm = async () => {
-        const locationUrl = `https://www.google.com/maps?q=${origin.latitude},${origin.longitude}`;
-        alert(`Ubicación: ${locationUrl}`);
-
-        if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(locationUrl);
-        } else {
-            Linking.openURL(locationUrl);
-        }
+        onShare();
+        setModalVisible(false);
     };
 
     const handleCancel = () => {
         setModalVisible(false);
+    };
+
+    const handleFinalizarViaje = async () => {
+        try {
+            console.log('Intentando enviar datos a la API...');
+            const response = await api.post(`/viajes/pasajero`, viajeData);
+    
+            if (response.status === 201) {
+                Alert.alert('Éxito', 'Viaje finalizado con éxito');
+    
+                // Limpiar todos los estados relacionados con el viaje
+                setDestination(null); // Limpiar el destino
+                setTime(""); // Limpiar el tiempo
+                setDistance("0.00"); // Reiniciar la distancia
+                setDireccionInicio(""); // Limpiar la dirección de inicio
+                setDireccionFin(""); // Limpiar la dirección de fin
+                setViajeData(null); // Limpiar los datos del viaje
+    
+                // Limpiar la barra de búsqueda (si estás usando GooglePlacesAutocomplete)
+                if (searchRef.current) {
+                    searchRef.current.setAddressText("");
+                }
+            } else {
+                setError(response.data.message || "Error al finalizar el viaje.");
+            }
+        } catch (error) {
+            console.error("Error al enviar los datos:", error);
+            setError('Error al enviar los datos, inténtelo de nuevo.');
+        }
     };
 
     let [fontsLoaded] = useFonts({
@@ -127,6 +142,30 @@ const Monitoreo = () => {
 
     if (!fontsLoaded) {
         return <AppLoading />;
+    }
+
+    const locationUrl = `https://www.google.com/maps?q=${origin.latitude},${origin.longitude}`;
+
+    const onShare = async () => {
+        try {
+            const result = await Share.share({
+                message: ('Me encuentro ahora mismo en: ' + locationUrl),
+            });
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('shared with activity', result.activityType)
+                } else {
+                    console.log('shared')
+                }
+
+            } else if (result.action === Share.dismissedAction) {
+                console.log('dismissed');
+            }
+        }
+        catch (error) {
+            console.log(error.message)
+            Alert("No se pudo compartir la ubicación. Intentelo de nuevo.")
+        }
     }
 
     return (
@@ -140,6 +179,7 @@ const Monitoreo = () => {
 
                     {/* Buscador de ubicaciones */}
                     <GooglePlacesAutocomplete
+                        ref={searchRef}
                         fetchDetails={true}
                         placeholder="Buscar dirección"
                         onPress={(data, details = null) => {
@@ -205,6 +245,34 @@ const Monitoreo = () => {
                 </View>
             </View>
 
+            {/* Botones de Finalizar y Cancelar Viaje */}
+            {destination && (
+                <View style={styles.buttonsContainer}>
+                    {/* Botón para Finalizar Viaje */}
+                    <TouchableOpacity
+                        style={styles.finalizarButton}
+                        onPress={handleFinalizarViaje}
+                    >
+                        <Text style={styles.buttonText}>Finalizar Viaje</Text>
+                    </TouchableOpacity>
+
+                    {/* Botón para Cancelar Viaje */}
+                    <TouchableOpacity
+                        style={styles.cancelarButton}
+                        onPress={() => {
+                            setDestination(null);
+                            if (searchRef.current) {
+                                searchRef.current.clear()
+                                setTime("");
+                                setDistance("0.00")
+                            }
+                        }} // Limpia el estado del destino
+                    >
+                        <Text style={styles.buttonText}>Cancelar Viaje</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
             {/* Modal de confirmación */}
             <Modal
                 visible={modalVisible}
@@ -242,11 +310,12 @@ const styles = StyleSheet.create({
         backgroundColor: "#fffafa",
         borderRadius: 15,
         padding: 20,
-        marginVertical: 100,
+        marginVertical: 15,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         elevation: 2,
+
     },
     destinationContainer: {
         marginBottom: 16,
@@ -284,6 +353,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         width: 170,
+        marginLeft: 20
     },
     shareButtonText: {
         fontFamily: "Poppins_700Bold",
@@ -372,7 +442,7 @@ const styles = StyleSheet.create({
     },
     timeLabel: {
         fontFamily: "Inter_400Regular",
-        fontSize: 18,
+        fontSize: 15,
         color: "#1c1919",
         marginBottom: -8,
     },
@@ -381,6 +451,34 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontFamily: "Poppins_700Bold",
         color: "#1c1919",
+    },
+    buttonsContainer: {
+        width: "100%",
+        alignItems: "center",
+        marginTop: 3,
+    },
+    finalizarButton: {
+        backgroundColor: "#67a0ff", // Color azul para el botón de finalizar
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 15,
+        marginTop: 30,
+        marginBottom: 30,
+        width: "80%",
+        alignItems: "center",
+    },
+    cancelarButton: {
+        backgroundColor: "#ff3131", // Color rojo para el botón de cancelar
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 15,
+        width: "80%",
+        alignItems: "center",
+    },
+    buttonText: {
+        fontFamily: "Poppins_700Bold",
+        color: "#fffafa",
+        fontSize: 16,
     },
 });
 
