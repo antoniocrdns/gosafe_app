@@ -47,7 +47,6 @@ const Login = () => {
 
                 if (response.data.user && response.data.user.id) {
                     login(response.data.user.id);
-                    // navigation.navigate("Monitoreo");
                 } else {
                     Alert.alert("Error", response.data.message || "Credenciales incorrectas.");
                 }
