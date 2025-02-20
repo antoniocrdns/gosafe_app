@@ -58,7 +58,6 @@ const Monitoreo = () => {
             const duration = data.routes[0].legs[0].duration.text;
             const distance = data.routes[0].legs[0].distance.text;
     
-            // Convertir tiempo a minutos (extraemos solo el número) y distancia a formato decimal
             const timeInMinutes = parseInt(duration.split(' ')[0]);  // Convertir el tiempo a número (en minutos)
             const distanceInKm = parseFloat(distance.split(' ')[0]); // Convertir la distancia a número (en kilómetros)
     
@@ -115,14 +114,13 @@ const Monitoreo = () => {
                 Alert.alert('Éxito', 'Viaje finalizado con éxito');
     
                 // Limpiar todos los estados relacionados con el viaje
-                setDestination(null); // Limpiar el destino
-                setTime(""); // Limpiar el tiempo
-                setDistance("0.00"); // Reiniciar la distancia
-                setDireccionInicio(""); // Limpiar la dirección de inicio
-                setDireccionFin(""); // Limpiar la dirección de fin
-                setViajeData(null); // Limpiar los datos del viaje
+                setDestination(null);
+                setTime(""); 
+                setDistance("0.00"); 
+                setDireccionInicio("");
+                setDireccionFin("");
+                setViajeData(null);
     
-                // Limpiar la barra de búsqueda (si estás usando GooglePlacesAutocomplete)
                 if (searchRef.current) {
                     searchRef.current.setAddressText("");
                 }

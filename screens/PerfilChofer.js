@@ -7,9 +7,10 @@ import AppLoading from 'expo-app-loading';
 import api from '../utils/api'; 
 import { useAuth } from '../context/AuthContext'; 
 
-export default function DriverProfile() {
+export default function DriverProfile({route}) {
   const { user } = useAuth(); 
   const [userInfo, setUserInfo] = useState(null);
+  const { id_conductor } = route.params;
 
   let [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -20,7 +21,7 @@ export default function DriverProfile() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await api.get(`/conductores/2`);
+        const response = await api.get(`/conductores/${id_conductor}`);
         setUserInfo(response.data);
       } catch (error) {
         console.error('Error fetching user info:', error);
@@ -30,7 +31,7 @@ export default function DriverProfile() {
     if (user) {
       fetchUserInfo();
     }
-  }, [user]);
+  }, [user, id_conductor]);
 
   if (!fontsLoaded || !userInfo) {
     return <AppLoading />;

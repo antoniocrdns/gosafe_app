@@ -22,18 +22,17 @@ export const AuthProvider = ({ children }) => {
         // Llamamos a clearAuthData para eliminar la autenticación guardada
         clearAuthData();
 
-        // Por ahora, no verificamos nada de autenticación, ya que siempre queremos redirigir a Login
         setIsAuthenticated(false);
         setUser(null);
-        setLoading(false);  // Finalizamos la carga
+        setLoading(false); 
 
-    }, []);  // Este efecto solo se ejecutará una vez al inicio
+    }, []);
 
     const login = async (userId) => {
         setIsAuthenticated(true);
-        setUser({ id: userId });  // Solo guardamos el id
+        setUser({ id: userId });
         await AsyncStorage.setItem('isAuthenticated', 'true');
-        await AsyncStorage.setItem('user', JSON.stringify({ id: userId }));  // Guardamos solo el id
+        await AsyncStorage.setItem('user', JSON.stringify({ id: userId }));
     };
 
     const logout = async () => {
