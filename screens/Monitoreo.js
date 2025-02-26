@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Share, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Share, Alert, Dimensions } from "react-native";
 import * as Location from 'expo-location';
 import Entypo from '@expo/vector-icons/Entypo';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
@@ -112,6 +112,8 @@ const Monitoreo = () => {
     
             if (response.status === 201) {
                 Alert.alert('Éxito', 'Viaje finalizado con éxito');
+
+                console.log('Datos enviados correctamente');
     
                 // Limpiar todos los estados relacionados con el viaje
                 setDestination(null);
@@ -147,7 +149,7 @@ const Monitoreo = () => {
     const onShare = async () => {
         try {
             const result = await Share.share({
-                message: ('Me encuentro ahora mismo en: ' + locationUrl),
+                message: ('¡Hola! Estoy usando Go Safe y me encuentro ahora mismo en: ' + locationUrl),
             });
             if (result.action === Share.sharedAction) {
                 if (result.activityType) {
@@ -296,67 +298,68 @@ const Monitoreo = () => {
     );
 };
 
+const { width, height } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#4ba961",
         alignItems: "center",
-        padding: 20,
+        padding: width * 0.05,
     },
     formContainer: {
         width: "100%",
         backgroundColor: "#fffafa",
-        borderRadius: 15,
-        padding: 20,
-        marginVertical: 15,
+        borderRadius: width * 0.04,
+        padding: width * 0.05,
+        marginVertical: height * 0.02,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         elevation: 2,
-
     },
     destinationContainer: {
-        marginBottom: 16,
-        marginTop: 10,
+        marginBottom: height * 0.02,
+        marginTop: height * 0.015,
         flexDirection: "row",
         alignItems: "center",
     },
     iconContainer: {
-        width: 32,
-        height: 32,
+        width: width * 0.08,
+        height: width * 0.08,
         backgroundColor: "#ff3131",
-        borderRadius: 20,
+        borderRadius: width * 0.2,
         justifyContent: "center",
         alignItems: "center",
-        marginRight: 10,
+        marginRight: width * 0.03,
     },
     map: {
         width: "100%",
-        height: 200,
-        borderRadius: 8,
-        marginTop: 15,
+        height: height * 0.25,
+        borderRadius: width * 0.02,
+        marginTop: height * 0.02,
     },
     bottomContainer: {
         width: "100%",
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 20,
+        marginTop: height * 0.03,
     },
     shareButton: {
         backgroundColor: "#67a0ff",
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 15,
+        paddingVertical: height * 0.01,
+        paddingHorizontal: width * 0.04,
+        borderRadius: width * 0.04,
         justifyContent: "center",
         alignItems: "center",
-        width: 170,
-        marginLeft: 20
+        width: width * 0.45,
+        marginLeft: width * 0.05,
     },
     shareButtonText: {
         fontFamily: "Poppins_700Bold",
         color: "#fffafa",
-        fontSize: 16,
+        fontSize: width * 0.04,
     },
     modalOverlay: {
         flex: 1,
@@ -367,8 +370,8 @@ const styles = StyleSheet.create({
     modalContainer: {
         width: "80%",
         backgroundColor: "#fffafa",
-        borderRadius: 18,
-        padding: 20,
+        borderRadius: width * 0.05,
+        padding: width * 0.05,
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -377,9 +380,9 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     modalText: {
-        fontSize: 26,
-        marginTop: 30,
-        marginBottom: 50,
+        fontSize: width * 0.07,
+        marginTop: height * 0.04,
+        marginBottom: height * 0.06,
         textAlign: "center",
     },
     modalButtons: {
@@ -390,94 +393,100 @@ const styles = StyleSheet.create({
     noButton: {
         flex: 1,
         backgroundColor: "#ff3131",
-        paddingVertical: 10,
-        marginHorizontal: 5,
-        borderRadius: 15,
+        paddingVertical: height * 0.015,
+        marginHorizontal: width * 0.01,
+        borderRadius: width * 0.04,
         alignItems: "center",
     },
     noButtonText: {
         color: "#fffafa",
-        fontSize: 16,
-        fontFamily: "Poppins_700bold",
+        fontSize: width * 0.04,
+        fontFamily: "Poppins_700Bold",
         fontWeight: "bold",
     },
     yesButton: {
         flex: 1,
         backgroundColor: "#67a0ff",
-        paddingVertical: 10,
-        marginHorizontal: 5,
-        borderRadius: 15,
+        paddingVertical: height * 0.015,
+        marginHorizontal: width * 0.01,
+        borderRadius: width * 0.04,
         alignItems: "center",
     },
     yesButtonText: {
         color: "#fffafa",
-        fontSize: 16,
-        fontFamily: "Poppins_700bold",
+        fontSize: width * 0.04,
+        fontFamily: "Poppins_700Bold",
         fontWeight: "bold",
     },
     titulo: {
         fontFamily: "Poppins_700Bold",
-        fontSize: 38,
+        fontSize: width * 0.1,
         color: "#fffafa",
         fontWeight: "bold",
-        marginTop: 20,
+        marginTop: height * 0.03,
         alignSelf: "flex-start",
-        marginLeft: 1,
+        marginLeft: width * 0.02,
     },
     bubble: {
         flexDirection: "row",
         alignSelf: "flex-start",
         backgroundColor: "#fff",
-        borderRadius: 6,
+        borderRadius: width * 0.02,
         borderWidth: 0.5,
-        padding: 15,
-        width: 159,
+        padding: width * 0.04,
+        width: width * 0.4,
     },
     timeContainer: {
         alignItems: "center",
-        marginRight: 20,
-        marginLeft: 5,
+        marginRight: width * 0.05,
+        marginLeft: width * 0.02,
+        maxWidth: width * 0.8, // Limitar el ancho máximo del contenedor
     },
     timeLabel: {
         fontFamily: "Inter_400Regular",
-        fontSize: 15,
+        fontSize: width * 0.04,
         color: "#1c1919",
-        marginBottom: -8,
+        marginBottom: height * -0.01,
     },
     timeValue: {
-        fontSize: 30,
+        fontSize: width * 0.08,
         fontWeight: "bold",
         fontFamily: "Poppins_700Bold",
         color: "#1c1919",
+        maxWidth: width * 0.6, // Limitar el ancho máximo del texto
+        flexShrink: 1, // Permitir que el texto se reduzca si es necesario
+        overflow: 'hidden', // Evitar desbordamiento
+        textAlign: 'center', // Centrar el texto
     },
     buttonsContainer: {
         width: "100%",
         alignItems: "center",
-        marginTop: 3,
+        marginTop: height * 0.005,
     },
     finalizarButton: {
-        backgroundColor: "#67a0ff", // Color azul para el botón de finalizar
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-        borderRadius: 15,
-        marginTop: 30,
-        marginBottom: 30,
+        backgroundColor: "#67a0ff",
+        paddingVertical: height * 0.015,
+        paddingHorizontal: width * 0.06,
+        borderRadius: width * 0.04,
+        marginTop: height * 0.04,
+        marginBottom: height * 0.04,
         width: "80%",
         alignItems: "center",
     },
     cancelarButton: {
-        backgroundColor: "#ff3131", // Color rojo para el botón de cancelar
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-        borderRadius: 15,
+        backgroundColor: "#ff3131",
+        paddingVertical: height * 0.015,
+        paddingHorizontal: width * 0.06,
+        borderRadius: width * 0.04,
         width: "80%",
         alignItems: "center",
     },
     buttonText: {
         fontFamily: "Poppins_700Bold",
         color: "#fffafa",
-        fontSize: 16,
+        fontSize: width * 0.04,
     },
 });
+
 
 export default Monitoreo;

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
 import React, { useState } from "react";
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular } from '@expo-google-fonts/inter';
@@ -84,23 +84,25 @@ const ChangePassword = () => {
     );
 }
 
+const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
         backgroundColor: '#fffafa',
-        padding: 16,
+        padding: width * 0.04, // Ajuste del padding al 4% del ancho
     },
     inputcontainer: {
         backgroundColor: '#e9e9e9',
-        width: 220,
-        marginTop: 50,
-        borderRadius: 5
+        width: width * 0.6, // Ajuste del ancho al 60% del ancho de la pantalla
+        marginTop: height * 0.07, // Ajuste del margen superior al 7% de la altura
+        borderRadius: 5,
     },
     botoncambiar: {
         backgroundColor: "#67a0ff",
-        width: 220,
-        height: 40,
+        width: width * 0.6, // Ajuste del ancho al 60% del ancho de la pantalla
+        height: height * 0.06, // Ajuste de la altura al 6% de la altura
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
@@ -109,16 +111,19 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 4,
-        marginTop: 50
+        marginTop: height * 0.07, // Ajuste del margen superior al 7% de la altura
     },
     input: {
-        fontFamily: "Inter_400Regular"
+        fontFamily: "Inter_400Regular",
+        fontSize: width * 0.04, // Ajuste del tamaño del texto al 4% del ancho
+        padding: height * 0.015, // Ajuste del padding al 1.5% de la altura
     },
     errorText: {
         color: 'red',
-        marginTop: 10,
+        marginTop: height * 0.015, // Ajuste del margen superior al 1.5% de la altura
         fontFamily: "Inter_400Regular",
-    }
+        fontSize: width * 0.035, // Ajuste del tamaño del texto al 3.5% del ancho
+    },
 });
 
 export default ChangePassword;

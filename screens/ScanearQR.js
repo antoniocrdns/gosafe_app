@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from 'reac
 import { useFocusEffect } from '@react-navigation/native';
 import api from '../utils/api';
 
-export default function QRScannerDesign({ navigation }) {
+export default function ScanearQR({ navigation }) {
   const [showPopup, setShowPopup] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -69,7 +69,7 @@ export default function QRScannerDesign({ navigation }) {
       </View>
       <TouchableOpacity
         style={styles.scanButton}
-        onPress={() => navigation.navigate('PerfilChofer')}
+        /* onPress={() => navigation.navigate('PerfilChofer')} */
       />
       {showPopup && (
         <View style={styles.popup}>
@@ -82,9 +82,9 @@ export default function QRScannerDesign({ navigation }) {
       <Modal visible={showModal} transparent animationType="fade">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <TouchableOpacity style={styles.closeButton} onPress={() => setShowModal(false)}>
-              <Text style={styles.closeButtonText} onPress={closeModal}>×</Text>
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+            <Text style={styles.closeButtonText}>×</Text>
+          </TouchableOpacity>
             <Text style={styles.modalTitle}>Introducir Código</Text>
             <TextInput 
               style={styles.input} 
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   qrFrame: {
     width: 200,
     height: 200,
-    borderColor: 'white',
+    borderColor: '#fffafa',
     borderWidth: 2,
     borderRadius: 10,
     justifyContent: 'center',
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 20,
     height: 20,
-    borderColor: 'white',
+    borderColor: '#fffafa',
   },
   topLeft: {
     top: -2,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     bottom: 50,
     width: 70,
     height: 70,
-    backgroundColor: 'white',
+    backgroundColor: '#fffafa',
     borderRadius: 35,
     justifyContent: 'center',
     alignItems: 'center',
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   popupText: {
-    color: 'white',
+    color: '#fffafa',
   },
   popupButton: {
     marginTop: 5,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   closeButtonText: {
     fontSize: 20,
-    color: 'black',
+    color: '#1c1919',
   },
   modalTitle: {
     fontSize: 18,
@@ -223,10 +223,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   confirmButtonText: {
-    color: 'white',
+    color: '#fffafa',
   },
   errorText: {
-    color: 'red',
+    color: '#ff3131',
     fontSize: 14,
     marginTop: 10,
   }

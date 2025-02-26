@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, Dimensions, Platform } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
 import api from "../utils/api";
@@ -102,6 +102,8 @@ const Login = () => {
     );
 };
 
+const { width, height } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -110,71 +112,67 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     logo: {
-        width: 300,
-        height: 150,
+        width: width * 0.6, // 60% del ancho de la pantalla
+        height: height * 0.2, // 20% del alto de la pantalla
         position: "absolute",
-        top: 40,
-    },
+        top: height * 0.02, // Reducido al 2% del alto de la pantalla para subir más el logo
+    },    
     innerContainer: {
         backgroundColor: "#fffafa",
         width: "90%",
-        padding: 20,
+        padding: width * 0.05, // 5% del ancho de la pantalla
         borderRadius: 20,
         justifyContent: "center",
         alignItems: "center",
-        top: 30,
+        marginTop: height * 0.03, // 3% del alto de la pantalla
     },
     title: {
         fontFamily: "Poppins_400Regular",
-        fontSize: 39,
+        fontSize: width * 0.09, // 9% del ancho de la pantalla
         color: "#1c1919",
         fontWeight: "bold",
         textAlign: "center",
-        marginBottom: 0,
-        top: 1,
+        marginBottom: height * 0.02, // 2% del alto de la pantalla
     },
     input: {
-        height: 50,
+        height: height * 0.07, // 7% del alto de la pantalla
         backgroundColor: "#e9e9e9",
         borderRadius: 5,
-        marginBottom: 40,
+        marginBottom: height * 0.04, // 4% del alto de la pantalla
         paddingHorizontal: 15,
-        fontSize: 15,
+        fontSize: width * 0.04, // 4% del ancho de la pantalla
         width: "100%",
-        top: 35,
     },
     loginButton: {
         backgroundColor: "#4ba961",
-        padding: 13,
+        paddingVertical: height * 0.02, // 2% del alto de la pantalla
         borderRadius: 20,
         alignItems: "center",
-        marginBottom: 20,
+        marginBottom: height * 0.02, // 2% del alto de la pantalla
         width: "100%",
-        top: 30,
     },
     loginButtonText: {
         color: "#fffafa",
-        fontSize: 20,
+        fontSize: width * 0.05, // 5% del ancho de la pantalla
         fontWeight: "bold",
     },
     registerButton: {
         backgroundColor: "#67a0ff",
-        padding: 13,
+        paddingVertical: height * 0.02, // 2% del alto de la pantalla
         borderRadius: 20,
         alignItems: "center",
         width: "100%",
-        top: -13,
-        marginBottom: 15,
+        marginBottom: height * 0.015, // 1.5% del alto de la pantalla
     },
     registerButtonText: {
         color: "#fffafa",
-        fontSize: 20,
+        fontSize: width * 0.05, // 5% del ancho de la pantalla
         fontWeight: "bold",
     },
     separator: {
         flexDirection: "row",
         alignItems: "center",
-        marginVertical: 30,
+        marginVertical: height * 0.03, // 3% del alto de la pantalla
     },
     line: {
         flex: 1,
@@ -183,10 +181,11 @@ const styles = StyleSheet.create({
     },
     orText: {
         fontFamily: "Poppins_400Regular",
-        fontSize: 18,
+        fontSize: width * 0.045, // 4.5% del ancho de la pantalla
         color: "#1c1919",
         marginHorizontal: 10,
     },
 });
+
 
 export default Login;

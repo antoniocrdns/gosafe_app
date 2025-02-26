@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import moment from 'moment'; // moment en este caso se usa para la fecha y hora
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import moment from 'moment';
 import 'moment/locale/es';
 moment.locale('es');
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
@@ -9,6 +9,7 @@ import AppLoading from 'expo-app-loading';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
+
 const Historial = () => {
     const { user } = useAuth();
     const [rutas, setRutas] = useState([]);
@@ -27,7 +28,7 @@ const Historial = () => {
             if (user) {
                 fetchHistorial();
             }
-        }, [user]) // Se vuelve a ejecutar cada vez que el usuario cambie o se enfoque la pantalla
+        }, [user])
     );
 
     let [fontsLoaded] = useFonts({
@@ -41,32 +42,35 @@ const Historial = () => {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={[styles.header, { fontFamily: 'Poppins_700Bold' }]}>Historial</Text>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.container}>
+                <Text style={[styles.header, { fontFamily: 'Poppins_700Bold' }]}>Historial</Text>
 
-            <FlatList
-                data={rutas}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <Text style={styles.dateText}>
-                            {moment(item.fecha).format('MMMM Do YYYY, h:mm A')}
-                        </Text>
-                        <Text style={styles.cardText}>Desde: {item.direccion_inicio}</Text>
-                        <Text style={styles.cardText}>Hasta: {item.direccion_fin}</Text>
-                        <Text style={styles.cardText}>Tiempo de viaje: {item.tiempo_viaje}</Text>
-                        <Text style={styles.cardText}>Distancia: {item.distancia_km} km</Text>
-                    </View>
-                )}
-                ListEmptyComponent={
+                {/* Mapeamos las rutas y las renderizamos manualmente */}
+                {rutas.length > 0 ? (
+                    rutas.map((item, index) => (
+                        <View key={index} style={styles.card}>
+                            <Text style={styles.dateText}>
+                                {moment(item.fecha).format('MMMM Do YYYY, h:mm A')}
+                            </Text>
+                            <Text style={styles.cardText}>Desde: {item.direccion_inicio}</Text>
+                            <Text style={styles.cardText}>Hasta: {item.direccion_fin}</Text>
+                            <Text style={styles.cardText}>Tiempo de viaje: {item.tiempo_viaje}</Text>
+                            <Text style={styles.cardText}>Distancia: {item.distancia_km} km</Text>
+                        </View>
+                    ))
+                ) : (
                     <Text style={styles.emptyText}>No hay viajes registrados.</Text>
-                }
-            />
-        </View>
+                )}
+            </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
+    scrollContainer: {
+        flexGrow: 1,
+    },
     container: {
         flex: 1,
         padding: 20,

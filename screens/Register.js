@@ -9,7 +9,8 @@ import {
   Platform,
   Alert,
   StyleSheet,
-  ActivityIndicator
+  ActivityIndicator,
+  Dimensions
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
@@ -149,6 +150,8 @@ const Register = () => {
   );
 };
 
+const { width, height } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -162,46 +165,46 @@ const styles = StyleSheet.create({
   innerContainer: {
     backgroundColor: "#fffafa",
     width: "90%",
-    padding: 30,
+    padding: width * 0.08, // 8% del ancho de la pantalla
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
   },
   title: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 39,
+    fontSize: width * 0.09, // 9% del ancho de la pantalla
     color: "#1c1919",
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 50,
+    marginBottom: height * 0.06, // 6% del alto de la pantalla
   },
   input: {
-    height: 50,
+    height: height * 0.07, // 7% del alto de la pantalla
     backgroundColor: "#e9e9e9",
     borderRadius: 5,
-    marginBottom: 20,
+    marginBottom: height * 0.025, // 2.5% del alto de la pantalla
     paddingHorizontal: 15,
-    fontSize: 15,
+    fontSize: width * 0.04, // 4% del ancho de la pantalla
     width: "100%",
   },
   spacer: {
-    height: 20,
+    height: height * 0.025, // 2.5% del alto de la pantalla
   },
   registerButton: {
     backgroundColor: "#67a0ff",
-    padding: 13,
+    paddingVertical: height * 0.02, // 2% del alto de la pantalla
     borderRadius: 20,
     alignItems: "center",
     width: "100%",
   },
   registerButtonText: {
     color: "#fffafa",
-    fontSize: 20,
+    fontSize: width * 0.05, // 5% del ancho de la pantalla
     fontWeight: "bold",
   },
   loginContainer: {
     flexDirection: "row",
-    marginTop: 50,
+    marginTop: height * 0.06, // 6% del alto de la pantalla
   },
   link: {
     color: "#67a0ff",
@@ -210,7 +213,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "red",
-    marginBottom: 10,
+    marginBottom: height * 0.015, // 1.5% del alto de la pantalla
     fontFamily: "Poppins_400Regular",
   },
 });

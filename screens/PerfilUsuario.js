@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular } from '@expo-google-fonts/inter';
@@ -78,28 +78,30 @@ const PerfilUsuario = ({ navigation }) => {
     );
 };
 
+const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fffafa',
-        padding: 8,
-        marginTop: 50
+        padding: width * 0.02, // Adaptar padding al 2% del ancho
+        marginTop: height * 0.05, // Adaptar margen superior al 5% de la altura
     },
     nameContainer: {
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: height * 0.03, // Margen inferior al 3% de la altura
     },
     nameText: {
-        fontSize: 24,
+        fontSize: width * 0.06, // Adaptar tamaño de fuente al 6% del ancho
         textAlign: 'center',
         fontFamily: 'Poppins_700Bold',
     },
     lineav: {
         height: 2,
         backgroundColor: '#1c1919',
-        marginVertical: 10,
+        marginVertical: height * 0.015, // Margen vertical al 1.5% de la altura
         width: '80%',
     },
     infocontainer: {
@@ -108,8 +110,8 @@ const styles = StyleSheet.create({
     },
     botoncambiar: {
         backgroundColor: "#67a0ff",
-        width: 200,
-        height: 40,
+        width: width * 0.55, // Adaptar ancho al 55% del ancho de la pantalla
+        height: height * 0.06, // Adaptar altura al 6% de la altura
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
@@ -118,12 +120,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 4,
-        marginBottom: 20,  // Mantener espacio entre botones
+        marginBottom: height * 0.025, // Espacio entre botones (2.5% de la altura)
     },
     botoncerrar: {
         backgroundColor: "#ff3131",
-        width: 200,
-        height: 40,
+        width: width * 0.55, // Adaptar ancho al 55% del ancho de la pantalla
+        height: height * 0.06, // Adaptar altura al 6% de la altura
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
@@ -136,12 +138,12 @@ const styles = StyleSheet.create({
     icontextcontainer: {
         flexDirection: "row",
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: height * 0.025, // Margen inferior al 2.5% de la altura
     },
     textInfo: {
-        padding: 10,
+        padding: width * 0.025, // Adaptar padding al 2.5% del ancho
         fontFamily: "Inter_400Regular",
-        fontSize: 16,
+        fontSize: width * 0.04, // Adaptar tamaño de fuente al 4% del ancho
     },
 });
 
