@@ -29,11 +29,11 @@ const ChangePassword = () => {
 
         try {
             const response = await api.put(`/pasajeros/password/${user.id}/`, { contraseña });
-            if (response.data.message === "Pasajero actualizado") {
+            if (response.data.message === "Contaseña actualizada") {
                 alert('Contraseña cambiada con éxito!');
                 setContraseña('');
                 setConfirmPassword('');
-            } else {
+            }   else {
                 setError(response.data.message);
             }
         } catch (error) {
@@ -78,7 +78,7 @@ const ChangePassword = () => {
             ) : null}
 
             <TouchableOpacity style={styles.botoncambiar} onPress={handleChangePassword}>
-                <Text style={{ color: "#fffafa", fontFamily: "Inter_400Regular" }}>Cambiar Contraseña</Text>
+                <Text style={{ color: "#fffafa", fontFamily: "Poppins_700Bold" }}>Cambiar Contraseña</Text>
             </TouchableOpacity>
         </View>
     );
