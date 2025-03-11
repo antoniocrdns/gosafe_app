@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://api-gosafe.onrender.com/api',
+  baseURL: 'http://kscggogk8sw0kkokwg04gco0.31.170.165.191.sslip.io/api',
 });
 
 export default api;
