@@ -171,9 +171,9 @@ function MainTabs() {
                 name="ScanearQR"
                 component={ScanQRNavigator}
                 options={{
-                    tabBarLabel: 'Scanear QR',
+                    tabBarLabel: 'Introducir código',
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="qrcode-scan" size={size} color={color} />
+                        <MaterialCommunityIcons name="text-box-search-outline" size={size} color={color} />
                     ),
                     headerShown: false,
                 }}
