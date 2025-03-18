@@ -18,6 +18,7 @@ const Monitoreo = () => {
         longitude: -114.759567
     });
     const [destination, setDestination] = useState();
+    const [userLocation, setUserLocation] = useState(null); // Ubicación actual del usuario
     const [time, setTime] = useState("");
     const [distance, setDistance] = useState("0.00");
     const [direccionInicio, setDireccionInicio] = useState("");
@@ -30,7 +31,7 @@ const Monitoreo = () => {
 
     const GOOGLE_MAP_KEY2 = "AIzaSyAvSJwfk_of_K86P7cy4jAiaKuwXJ7925E";
 
-    // Obtener permisos y la ubicación actual (aun sin funcionar)
+    // Obtener permisos y la ubicación actual
     useEffect(() => {
         const getLocationPermission = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
@@ -43,10 +44,44 @@ const Monitoreo = () => {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
             };
-            setOrigin(current);
+            setOrigin(current); // Establece la ubicación inicial de origen
+            setUserLocation(current); // Establece la ubicación inicial del usuario
         };
 
         getLocationPermission();
+    }, []);
+
+    // Actualizar la ubicación del usuario en tiempo real
+    useEffect(() => {
+        const watchLocation = async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+                alert("Permission denied");
+                return;
+            }
+
+            // Este watchPositionAsync actualizará la ubicación del usuario constantemente
+            const subscription = Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.High,
+                    timeInterval: 1000, // Actualización cada segundo
+                    distanceInterval: 1, // Actualización cada metro
+                },
+                (location) => {
+                    setUserLocation(location.coords);
+                }
+            );
+
+            return subscription;
+        };
+
+        const subscription = watchLocation();
+        
+        return () => {
+            if (subscription) {
+                subscription.remove(); // Limpia la suscripción cuando el componente se desmonta
+            }
+        };
     }, []);
 
     // Obtener tiempo y distancia del viaje
@@ -57,15 +92,15 @@ const Monitoreo = () => {
             const data = await response.json();
             const duration = data.routes[0].legs[0].duration.text;
             const distance = data.routes[0].legs[0].distance.text;
-    
+
             const timeInMinutes = parseInt(duration.split(' ')[0]);  // Convertir el tiempo a número (en minutos)
             const distanceInKm = parseFloat(distance.split(' ')[0]); // Convertir la distancia a número (en kilómetros)
-    
+
             setTime(duration); 
             setDistance(distance);
             setDireccionInicio(data.routes[0].legs[0].start_address);
             setDireccionFin(data.routes[0].legs[0].end_address);
-    
+
             const tripData = {
                 direccion_inicio: data.routes[0].legs[0].start_address,
                 direccion_fin: data.routes[0].legs[0].end_address,
@@ -76,14 +111,10 @@ const Monitoreo = () => {
             };
 
             setViajeData(tripData);
-    
-            console.log("Datos listos para enviar a la API:", viajeData)
-    
         } catch (error) {
             console.error("Error al obtener los datos del viaje:", error);
         }
     };
-    
 
     // Llamar a la función cada vez que se actualiza el destino
     useEffect(() => {
@@ -109,12 +140,12 @@ const Monitoreo = () => {
         try {
             console.log('Intentando enviar datos a la API...');
             const response = await api.post(`/viajes/pasajero`, viajeData);
-    
+
             if (response.status === 201) {
                 Alert.alert('Éxito', 'Viaje finalizado con éxito');
 
                 console.log('Datos enviados correctamente');
-    
+
                 // Limpiar todos los estados relacionados con el viaje
                 setDestination(null);
                 setTime(""); 
@@ -122,7 +153,7 @@ const Monitoreo = () => {
                 setDireccionInicio("");
                 setDireccionFin("");
                 setViajeData(null);
-    
+
                 if (searchRef.current) {
                     searchRef.current.setAddressText("");
                 }
@@ -144,29 +175,33 @@ const Monitoreo = () => {
         return <AppLoading />;
     }
 
-    const locationUrl = `https://www.google.com/maps?q=${origin.latitude},${origin.longitude}`;
+    const locationUrl = userLocation
+    ? `https://www.google.com/maps?q=${userLocation.latitude},${userLocation.longitude}`
+    : null; 
 
     const onShare = async () => {
-        try {
-            const result = await Share.share({
-                message: ('¡Hola! Estoy usando Go Safe y me encuentro ahora mismo en: ' + locationUrl),
-            });
-            if (result.action === Share.sharedAction) {
-                if (result.activityType) {
-                    console.log('shared with activity', result.activityType)
-                } else {
-                    console.log('shared')
+        if (locationUrl) {
+            try {
+                const result = await Share.share({
+                    message: `¡Hola! Estoy usando Go Safe y me encuentro ahora mismo en: ${locationUrl}`,
+                });
+                if (result.action === Share.sharedAction) {
+                    if (result.activityType) {
+                        console.log("shared with activity", result.activityType);
+                    } else {
+                        console.log("shared");
+                    }
+                } else if (result.action === Share.dismissedAction) {
+                    console.log("dismissed");
                 }
-
-            } else if (result.action === Share.dismissedAction) {
-                console.log('dismissed');
+            } catch (error) {
+                console.log(error.message);
+                Alert.alert("No se pudo compartir la ubicación. Intentelo de nuevo.");
             }
+        } else {
+            Alert.alert("Aún no se ha obtenido la ubicación.");
         }
-        catch (error) {
-            console.log(error.message)
-            Alert("No se pudo compartir la ubicación. Intentelo de nuevo.")
-        }
-    }
+    };
 
     return (
         <View style={styles.container}>
@@ -220,6 +255,15 @@ const Monitoreo = () => {
                     />
                     {/* Marcador destino */}
                     {destination && <Marker coordinate={destination} />}
+                    {/* Marcador que sigue la ubicación del usuario */}
+                    {userLocation && (
+                        <Marker
+                            coordinate={userLocation}
+                            title="Mi ubicación"
+                            description="Ubicación actual del usuario"
+                            pinColor="cyan"
+                        />
+                    )}
                     
                     {/* Ruta desde origen a destino */}
                     {origin && destination && (
