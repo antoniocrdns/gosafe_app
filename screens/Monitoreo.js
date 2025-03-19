@@ -51,7 +51,6 @@ const Monitoreo = () => {
         getLocationPermission();
     }, []);
 
-    // Actualizar la ubicación del usuario en tiempo real
     useEffect(() => {
         const watchLocation = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
@@ -60,7 +59,6 @@ const Monitoreo = () => {
                 return;
             }
 
-            // Este watchPositionAsync actualizará la ubicación del usuario constantemente
             const subscription = Location.watchPositionAsync(
                 {
                     accuracy: Location.Accuracy.High,
@@ -79,7 +77,7 @@ const Monitoreo = () => {
         
         return () => {
             if (subscription) {
-                subscription.remove(); // Limpia la suscripción cuando el componente se desmonta
+                subscription.remove();
             }
         };
     }, []);
@@ -136,6 +134,22 @@ const Monitoreo = () => {
         setModalVisible(false);
     };
 
+    const cancelViaje = () => {
+        setDestination(null);
+        setTime("");
+        setDistance("0.00");
+        setDireccionInicio("");
+        setDireccionFin("");
+        setViajeData(null);
+    
+        setOrigin(userLocation);
+    
+        if (searchRef.current) {
+            searchRef.current.clear();
+        }
+    };
+    
+
     const handleFinalizarViaje = async () => {
         try {
             console.log('Intentando enviar datos a la API...');
@@ -153,6 +167,8 @@ const Monitoreo = () => {
                 setDireccionInicio("");
                 setDireccionFin("");
                 setViajeData(null);
+
+                setOrigin(userLocation);
 
                 if (searchRef.current) {
                     searchRef.current.setAddressText("");
@@ -222,7 +238,7 @@ const Monitoreo = () => {
                                 latitude: details?.geometry?.location.lat,
                                 longitude: details?.geometry?.location.lng,
                             };
-                            setDestination(destinationCoord); // Establecer el destino
+                            setDestination(destinationCoord);
                         }}
                         query={{
                             key: GOOGLE_MAP_KEY2,
@@ -261,7 +277,7 @@ const Monitoreo = () => {
                             coordinate={userLocation}
                             title="Mi ubicación"
                             description="Ubicación actual del usuario"
-                            pinColor="cyan"
+                            pinColor="#67a0ff"
                         />
                     )}
                     
@@ -301,17 +317,7 @@ const Monitoreo = () => {
                     </TouchableOpacity>
 
                     {/* Botón para Cancelar Viaje */}
-                    <TouchableOpacity
-                        style={styles.cancelarButton}
-                        onPress={() => {
-                            setDestination(null);
-                            if (searchRef.current) {
-                                searchRef.current.clear()
-                                setTime("");
-                                setDistance("0.00")
-                            }
-                        }} // Limpia el estado del destino
-                    >
+                    <TouchableOpacity style={styles.cancelarButton} onPress={cancelViaje}>
                         <Text style={styles.buttonText}>Cancelar Viaje</Text>
                     </TouchableOpacity>
                 </View>
