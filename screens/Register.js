@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFonts, Poppins_400Regular } from "@expo-google-fonts/poppins";
-import AppLoading from "expo-app-loading";
+import * as SplashScreen from "expo-splash-screen";
 import api from '../utils/api';
 
 const Register = () => {
@@ -30,9 +30,28 @@ const Register = () => {
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isReady, setIsReady] = useState(false); // Estado para indicar cuando la app está lista
 
-  if (!fontsLoaded) {
-    return <AppLoading />;
+  // Cargar las fuentes y ocultar la splash screen
+  useEffect(() => {
+    const prepare = async () => {
+      try {
+        // Prevenir que la splash screen se oculte automáticamente
+        await SplashScreen.preventAutoHideAsync();
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // Una vez que todo está listo, cambiamos el estado para ocultar la splash screen
+        setIsReady(true);
+        SplashScreen.hideAsync(); // Ocultar la splash screen
+      }
+    };
+
+    prepare();
+  }, []);
+
+  if (!fontsLoaded || !isReady) {
+    return null; // Mientras se cargan las fuentes o se prepara la app, no se muestra nada
   }
 
   const emailValidator = (correo) => {

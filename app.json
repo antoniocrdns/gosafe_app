@@ -4,7 +4,7 @@
     "slug": "gosafe_app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/gosafe_logo.png",
+    "icon": "./assets/adaptive-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -17,15 +17,21 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/gosafe_logo.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.antoniocrdns.gosafe_app"
     },
     "web": {
       "favicon": "./assets/gosafe_logo.png"
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d225dc10-ac88-4036-91e4-126e98c7dba0"
+      }
+    }
   }
 }

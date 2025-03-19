@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import moment from 'moment';
 import 'moment/locale/es';
 moment.locale('es');
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular } from '@expo-google-fonts/inter';
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen'; // Importar SplashScreen
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
@@ -13,6 +13,7 @@ import { useFocusEffect } from '@react-navigation/native';
 const Historial = () => {
     const { user } = useAuth();
     const [rutas, setRutas] = useState([]);
+    const [isReady, setIsReady] = useState(false); // Para controlar la carga de las fuentes
 
     const fetchHistorial = async () => {
         try {
@@ -37,8 +38,28 @@ const Historial = () => {
         Inter_400Regular,
     });
 
-    if (!fontsLoaded) {
-        return <AppLoading />;
+    useEffect(() => {
+        const prepare = async () => {
+            try {
+                // Prevenir que la pantalla de inicio se oculte automáticamente
+                await SplashScreen.preventAutoHideAsync();
+            } catch (e) {
+                console.warn(e);
+            }
+        };
+
+        prepare();
+    }, []);
+
+    useEffect(() => {
+        if (fontsLoaded) {
+            setIsReady(true); // Cuando las fuentes estén cargadas, se marca que la app está lista
+            SplashScreen.hideAsync(); // Ocultar la splash screen
+        }
+    }, [fontsLoaded]);
+
+    if (!isReady) {
+        return null; // No mostramos nada hasta que las fuentes se carguen
     }
 
     return (

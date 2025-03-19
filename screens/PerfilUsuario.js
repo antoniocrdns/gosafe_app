@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions } from "rea
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular } from '@expo-google-fonts/inter';
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen'; // Importar SplashScreen
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
@@ -16,6 +16,20 @@ const PerfilUsuario = ({ navigation }) => {
 
     const { user, logout } = useAuth();
     const [userData, setUserData] = useState(null);
+    const [isReady, setIsReady] = useState(false); // Para controlar si la app está lista
+
+    useEffect(() => {
+        const prepare = async () => {
+            try {
+                // Prevenir que la pantalla de inicio se oculte automáticamente
+                await SplashScreen.preventAutoHideAsync();
+            } catch (e) {
+                console.warn(e);
+            }
+        };
+
+        prepare();
+    }, []);
 
     useEffect(() => {
         if (user && user.id) {
@@ -28,6 +42,9 @@ const PerfilUsuario = ({ navigation }) => {
                 } catch (error) {
                     console.error('Error al cargar los datos del usuario:', error);
                     Alert.alert("Error", "No se pudieron cargar los datos del usuario.");
+                } finally {
+                    setIsReady(true); // Marcar que la app está lista
+                    SplashScreen.hideAsync(); // Ocultar la splash screen
                 }
             };
 
@@ -38,8 +55,8 @@ const PerfilUsuario = ({ navigation }) => {
         }
     }, [user]);
 
-    if (!fontsLoaded || !userData) {
-        return <AppLoading />;
+    if (!fontsLoaded || !isReady) {
+        return null; // Mientras se cargan las fuentes o se están obteniendo los datos, no mostramos nada
     }
 
     const handleLogout = () => {

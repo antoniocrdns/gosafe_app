@@ -1,8 +1,8 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular } from '@expo-google-fonts/inter';
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen'; // Importamos SplashScreen
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,6 +11,7 @@ const ChangePassword = () => {
     const [contraseña, setContraseña] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const [isReady, setIsReady] = useState(false); // Para controlar cuándo la app está lista
 
     const handleChangePassword = async () => {
         if (!contraseña) {
@@ -33,7 +34,7 @@ const ChangePassword = () => {
                 alert('Contraseña cambiada con éxito!');
                 setContraseña('');
                 setConfirmPassword('');
-            }   else {
+            } else {
                 setError(response.data.message);
             }
         } catch (error) {
@@ -47,8 +48,28 @@ const ChangePassword = () => {
         Inter_400Regular,
     });
 
-    if (!fontsLoaded) {
-        return <AppLoading />;
+    useEffect(() => {
+        const prepare = async () => {
+            try {
+                // Prevenir que la pantalla de inicio se oculte automáticamente
+                await SplashScreen.preventAutoHideAsync();
+            } catch (e) {
+                console.warn(e);
+            }
+        };
+
+        prepare();
+    }, []);
+
+    useEffect(() => {
+        if (fontsLoaded) {
+            setIsReady(true); // Marcar que la app está lista cuando las fuentes se carguen
+            SplashScreen.hideAsync(); // Ocultar la pantalla de inicio (Splash Screen)
+        }
+    }, [fontsLoaded]);
+
+    if (!isReady) {
+        return null; // No renderizamos nada hasta que las fuentes estén cargadas
     }
 
     return (

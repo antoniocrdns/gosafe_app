@@ -3,10 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, Share, Alert, Dimensio
 import * as Location from 'expo-location';
 import Entypo from '@expo/vector-icons/Entypo';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
-import AppLoading from 'expo-app-loading';
-import Mapview, { Marker } from 'react-native-maps';
+import * as SplashScreen from 'expo-splash-screen';
+import Mapview, { Marker, Polyline } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import MapViewDirecctions from 'react-native-maps-directions';
 import api from "../utils/api";
 import { useAuth } from '../context/AuthContext';
 
@@ -24,6 +23,7 @@ const Monitoreo = () => {
     const [direccionInicio, setDireccionInicio] = useState("");
     const [direccionFin, setDireccionFin] = useState("");
     const [viajeData, setViajeData] = useState(null);
+    const [routeCoordinates, setRouteCoordinates] = useState([]); // Almacenar las coordenadas de la ruta
 
     const { user } = useAuth();
 
@@ -82,7 +82,7 @@ const Monitoreo = () => {
         };
     }, []);
 
-    // Obtener tiempo y distancia del viaje
+    // Obtener tiempo, distancia y ruta del viaje
     const getTravelData = async (origin, destination) => {
         const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAP_KEY2}`;
         try {
@@ -99,6 +99,11 @@ const Monitoreo = () => {
             setDireccionInicio(data.routes[0].legs[0].start_address);
             setDireccionFin(data.routes[0].legs[0].end_address);
 
+            // Almacenar las coordenadas de la ruta
+            const points = data.routes[0].overview_polyline.points;
+            const decodedPath = decodePolyline(points);
+            setRouteCoordinates(decodedPath);
+
             const tripData = {
                 direccion_inicio: data.routes[0].legs[0].start_address,
                 direccion_fin: data.routes[0].legs[0].end_address,
@@ -112,6 +117,40 @@ const Monitoreo = () => {
         } catch (error) {
             console.error("Error al obtener los datos del viaje:", error);
         }
+    };
+
+    // Decodificar las coordenadas de la ruta de la respuesta de Google Maps
+    const decodePolyline = (encoded) => {
+        let len = encoded.length;
+        let index = 0;
+        let lat = 0;
+        let lng = 0;
+        let coordinates = [];
+
+        while (index < len) {
+            let b, shift = 0, result = 0;
+            do {
+                b = encoded.charCodeAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            let deltaLat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+            lat += deltaLat;
+
+            shift = 0;
+            result = 0;
+            do {
+                b = encoded.charCodeAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            let deltaLng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+            lng += deltaLng;
+
+            coordinates.push({ latitude: (lat / 1E5), longitude: (lng / 1E5) });
+        }
+
+        return coordinates;
     };
 
     // Llamar a la función cada vez que se actualiza el destino
@@ -141,6 +180,7 @@ const Monitoreo = () => {
         setDireccionInicio("");
         setDireccionFin("");
         setViajeData(null);
+        setRouteCoordinates([]);
     
         setOrigin(userLocation);
     
@@ -148,7 +188,6 @@ const Monitoreo = () => {
             searchRef.current.clear();
         }
     };
-    
 
     const handleFinalizarViaje = async () => {
         try {
@@ -157,19 +196,16 @@ const Monitoreo = () => {
 
             if (response.status === 201) {
                 Alert.alert('Éxito', 'Viaje finalizado con éxito');
-
                 console.log('Datos enviados correctamente');
-
-                // Limpiar todos los estados relacionados con el viaje
                 setDestination(null);
                 setTime(""); 
                 setDistance("0.00"); 
                 setDireccionInicio("");
                 setDireccionFin("");
                 setViajeData(null);
-
                 setOrigin(userLocation);
-
+                setRouteCoordinates([]);
+                
                 if (searchRef.current) {
                     searchRef.current.setAddressText("");
                 }
@@ -187,12 +223,20 @@ const Monitoreo = () => {
         Poppins_700Bold,
     });
 
+    // Usar SplashScreen para mostrar la pantalla de carga mientras las fuentes no estén cargadas
+    useEffect(() => {
+        if (fontsLoaded) {
+            SplashScreen.hide(); // Ocultar el splash screen cuando las fuentes están cargadas
+        }
+    }, [fontsLoaded]);
+
     if (!fontsLoaded) {
-        return <AppLoading />;
+        SplashScreen.preventAutoHideAsync(); // Evitar que el splash screen se oculte automáticamente
+        return null; // Retornar null mientras las fuentes no están listas
     }
 
     const locationUrl = userLocation
-    ? `https://www.google.com/maps?q=${userLocation.latitude},${userLocation.longitude}`
+    ? `https://www.google.com/maps?q=${userLocation.latitude},${userLocation.longitude}` 
     : null; 
 
     const onShare = async () => {
@@ -282,11 +326,9 @@ const Monitoreo = () => {
                     )}
                     
                     {/* Ruta desde origen a destino */}
-                    {origin && destination && (
-                        <MapViewDirecctions
-                            origin={origin}
-                            destination={destination}
-                            apikey={GOOGLE_MAP_KEY2}
+                    {routeCoordinates.length > 0 && (
+                        <Polyline
+                            coordinates={routeCoordinates}
                             strokeWidth={4}
                             strokeColor='#67a0ff'
                         />

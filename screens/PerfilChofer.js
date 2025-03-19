@@ -3,14 +3,15 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { MaterialIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular } from '@expo-google-fonts/inter';
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen';
 import api from '../utils/api'; 
 import { useAuth } from '../context/AuthContext'; 
 
-export default function PerfilChofer({route}) {
+export default function PerfilChofer({ route }) {
   const { user } = useAuth(); 
   const [userInfo, setUserInfo] = useState(null);
   const { id_conductor } = route.params;
+  const [isReady, setIsReady] = useState(false);
 
   let [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -28,13 +29,26 @@ export default function PerfilChofer({route}) {
       }
     };
 
-    if (user) {
-      fetchUserInfo();
-    }
+    const prepare = async () => {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+        
+        if (user) {
+          await fetchUserInfo();
+        }
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setIsReady(true);
+        SplashScreen.hideAsync();
+      }
+    };
+
+    prepare();
   }, [user, id_conductor]);
 
-  if (!fontsLoaded || !userInfo) {
-    return <AppLoading />;
+  if (!fontsLoaded || !userInfo || !isReady) {
+    return null;
   }
 
   return (
@@ -85,7 +99,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', // Centra el icono horizontalmente
     overflow: 'hidden', // Asegura que el icono quede dentro del avatar circular
     alignSelf: 'center', // CENTRA el avatar horizontalmente
-  },  
+  },
   name: {
     fontSize: width * 0.065, // 6.5% del ancho de la pantalla
     fontWeight: 'bold',
