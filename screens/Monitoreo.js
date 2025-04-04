@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Share, Alert, Dimensions } from "react-native";
 import * as Location from 'expo-location';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -8,111 +8,127 @@ import Mapview, { Marker, Polyline } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import api from "../utils/api";
 import { useAuth } from '../context/AuthContext';
-import debounce from "lodash.debounce";
 
 const Monitoreo = () => {
+    const mapRef = useRef(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [origin, setOrigin] = useState({
         latitude: 32.436087,
-        longitude: -114.759567
+        longitude: -114.759567,
+        latitudeDelta: 0.36,
+        longitudeDelta: 0.36
     });
-    const [destination, setDestination] = useState();
-    const [userLocation, setUserLocation] = useState(null); // Ubicación actual del usuario
+    const [destination, setDestination] = useState(null);
+    const [userLocation, setUserLocation] = useState(null);
     const [time, setTime] = useState("");
     const [distance, setDistance] = useState("0.00");
     const [direccionInicio, setDireccionInicio] = useState("");
     const [direccionFin, setDireccionFin] = useState("");
     const [viajeData, setViajeData] = useState(null);
-    const [routeCoordinates, setRouteCoordinates] = useState([]); // Almacenar las coordenadas de la ruta
-    const [isMapReady, setIsMapReady] = useState(false);
-    const [searching, setSearching] = useState(false);
+    const [routeCoordinates, setRouteCoordinates] = useState([]);
+    const [error, setError] = useState(null);
 
     const { user } = useAuth();
     const searchRef = useRef(null);
     const GOOGLE_MAP_KEY2 = "AIzaSyAvSJwfk_of_K86P7cy4jAiaKuwXJ7925E";
-    const mapRef = useRef(null);
 
-        // Efecto para mantener la vista del mapa limitada a 40 km
-        useEffect(() => {
-            if (userLocation && mapRef.current) {
-                mapRef.current.animateToRegion({
-                    latitude: userLocation.latitude,
-                    longitude: userLocation.longitude,
-                    latitudeDelta: 0.36, // Aproximadamente 40 km
-                    longitudeDelta: 0.36,
-                });
-            }
-        }, [userLocation]);
-
-    // Obtener permisos y la ubicación actual
     useEffect(() => {
         const getLocationPermission = async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== "granted") {
-                alert("Permission denied");
-                return;
+            try {
+                let { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== "granted") {
+                    Alert.alert("Permiso denegado", "Necesitamos acceso a tu ubicación");
+                    return;
+                }
+                
+                let location = await Location.getCurrentPositionAsync({
+                    accuracy: Location.Accuracy.High
+                });
+                
+                const current = {
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                    latitudeDelta: 0.36,
+                    longitudeDelta: 0.36
+                };
+                
+                setOrigin(current);
+                setUserLocation(current);
+
+                if (mapRef.current) {
+                    mapRef.current.animateToRegion(current, 1000);
+                }
+            } catch (error) {
+                console.error("Error al obtener la ubicación:", error);
+                Alert.alert("Error", "No se pudo obtener tu ubicación");
             }
-            let location = await Location.getCurrentPositionAsync({});
-            const current = {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-            };
-            setOrigin(current); // Establece la ubicación inicial de origen
-            setUserLocation(current); // Establece la ubicación inicial del usuario
-            setIsMapReady(true);
         };
 
         getLocationPermission();
     }, []);
 
     useEffect(() => {
+        let subscription;
+        
         const watchLocation = async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== "granted") {
-                alert("Permission denied");
-                return;
-            }
-
-            const subscription = await Location.watchPositionAsync(
-                {
-                    accuracy: Location.Accuracy.High,
-                    timeInterval: 3000, // Actualización cada 3 segundos
-                    distanceInterval: 50, // Actualización cada 50 metros
-                },
-                (location) => {
-                    setUserLocation(location.coords);
+            try {
+                let { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== "granted") {
+                    Alert.alert("Permiso denegado", "Necesitamos acceso a tu ubicación");
+                    return;
                 }
-            );
 
-            return subscription;
+                subscription = await Location.watchPositionAsync(
+                    {
+                        accuracy: Location.Accuracy.High,
+                        timeInterval: 1000,
+                        distanceInterval: 1,
+                    },
+                    (location) => {
+                        const newLocation = {
+                            latitude: location.coords.latitude,
+                            longitude: location.coords.longitude,
+                            latitudeDelta: 0.36,
+                            longitudeDelta: 0.36
+                        };
+                        setUserLocation(newLocation);
+                    }
+                );
+            } catch (error) {
+                console.error("Error al observar la ubicación:", error);
+            }
         };
 
-        const subscription = watchLocation();
-        
+        watchLocation();
+
         return () => {
-            if (subscription && subscription.remove) {
+            if (subscription) {
                 subscription.remove();
             }
         };
     }, []);
 
-    // Obtener tiempo, distancia y ruta del viaje
-    const getTravelData = useCallback( debounce (async (origin, destination) => {
+    const getTravelData = async (origin, destination) => {
         const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAP_KEY2}`;
         try {
             const response = await fetch(url);
             const data = await response.json();
+            
+            if (data.status !== "OK") {
+                throw new Error("No se pudo obtener la ruta");
+            }
+
             const duration = data.routes[0].legs[0].duration.text;
             const distance = data.routes[0].legs[0].distance.text;
-            const timeInMinutes = parseInt(duration.split(' ')[0]);  // Convertir el tiempo a número (en minutos)
-            const distanceInKm = parseFloat(distance.split(' ')[0]); // Convertir la distancia a número (en kilómetros)
 
-            setTime(duration); 
+            const timeInMinutes = parseInt(duration.split(' ')[0]);
+            const distanceInKm = parseFloat(distance.split(' ')[0]);
+
+            setTime(duration);
             setDistance(distance);
             setDireccionInicio(data.routes[0].legs[0].start_address);
             setDireccionFin(data.routes[0].legs[0].end_address);
 
-            // Almacenar las coordenadas de la ruta
             const points = data.routes[0].overview_polyline.points;
             const decodedPath = decodePolyline(points);
             setRouteCoordinates(decodedPath);
@@ -129,11 +145,10 @@ const Monitoreo = () => {
             setViajeData(tripData);
         } catch (error) {
             console.error("Error al obtener los datos del viaje:", error);
+            Alert.alert("Error", "No se pudo calcular la ruta");
         }
-    }, 1000),
-    []);
+    };
 
-    // Decodificar las coordenadas de la ruta de la respuesta de Google Maps
     const decodePolyline = (encoded) => {
         let len = encoded.length;
         let index = 0;
@@ -161,19 +176,20 @@ const Monitoreo = () => {
             let deltaLng = ((result & 1) ? ~(result >> 1) : (result >> 1));
             lng += deltaLng;
 
-            coordinates.push({ latitude: (lat / 1E5), longitude: (lng / 1E5) });
+            coordinates.push({
+                latitude: lat / 1E5,
+                longitude: lng / 1E5
+            });
         }
 
         return coordinates;
     };
 
-    // Llamar a la función cada vez que se actualiza el destino
     useEffect(() => {
         if (origin && destination) {
             getTravelData(origin, destination);
         }
     }, [origin, destination]);
-
 
     const handleShareLocation = () => {
         setModalVisible(true);
@@ -196,9 +212,12 @@ const Monitoreo = () => {
         setDireccionFin("");
         setViajeData(null);
         setRouteCoordinates([]);
-    
-        setOrigin(userLocation);
-    
+        setOrigin({
+            ...userLocation,
+            latitudeDelta: 0.36,
+            longitudeDelta: 0.36
+        });
+
         if (searchRef.current) {
             searchRef.current.clear();
         }
@@ -206,30 +225,17 @@ const Monitoreo = () => {
 
     const handleFinalizarViaje = async () => {
         try {
-            console.log('Intentando enviar datos a la API...');
             const response = await api.post(`/viajes/pasajero`, viajeData);
 
             if (response.status === 201) {
                 Alert.alert('Éxito', 'Viaje finalizado con éxito');
-                console.log('Datos enviados correctamente');
-                setDestination(null);
-                setTime(""); 
-                setDistance("0.00"); 
-                setDireccionInicio("");
-                setDireccionFin("");
-                setViajeData(null);
-                setOrigin(userLocation);
-                setRouteCoordinates([]);
-                
-                if (searchRef.current) {
-                    searchRef.current.setAddressText("");
-                }
+                cancelViaje();
             } else {
-                setError(response.data.message || "Error al finalizar el viaje.");
+                throw new Error(response.data.message || "Error al finalizar el viaje");
             }
         } catch (error) {
             console.error("Error al enviar los datos:", error);
-            setError('Error al enviar los datos, inténtelo de nuevo.');
+            Alert.alert('Error', 'Error al enviar los datos, inténtelo de nuevo.');
         }
     };
 
@@ -250,8 +256,8 @@ const Monitoreo = () => {
     }
 
     const locationUrl = userLocation
-    ? `https://www.google.com/maps?q=${userLocation.latitude},${userLocation.longitude}` 
-    : null; 
+        ? `https://www.google.com/maps?q=${userLocation.latitude},${userLocation.longitude}`
+        : null;
 
     const onShare = async () => {
         if (locationUrl) {
@@ -259,19 +265,12 @@ const Monitoreo = () => {
                 const result = await Share.share({
                     message: `¡Hola! Estoy usando Go Safe y me encuentro ahora mismo en: ${locationUrl}`,
                 });
-                if (result.action === Share.sharedAction) {
-                    if (result.activityType) {
-                        console.log("shared with activity", result.activityType);
-                    } else {
-                        console.log("shared");
-                    }
-                } else if (result.action === Share.dismissedAction) {
-                    console.log("dismissed");
-                }
             } catch (error) {
-                console.log(error.message);
+                console.error(error.message);
                 Alert.alert("No se pudo compartir la ubicación. Intentelo de nuevo.");
             }
+        } else {
+            Alert.alert("Aún no se ha obtenido la ubicación.");
         }
     };
 
@@ -281,71 +280,103 @@ const Monitoreo = () => {
             <View style={styles.formContainer}>
                 <View style={styles.destinationContainer}>
                     <View style={styles.iconContainer}>
-                        <Entypo name="location-pin" size={24} color="#fffafa" />
+                        <Entypo name="location-pin" size={24} color="white" />
                     </View>
+
                     <GooglePlacesAutocomplete
                         ref={searchRef}
-                        placeholder="Buscar destino"
+                        fetchDetails={true}
+                        placeholder="Buscar dirección"
                         onPress={(data, details = null) => {
-                            setDestination({
-                                latitude: details.geometry.location.lat,
-                                longitude: details.geometry.location.lng,
-                            });
+                            if (details?.geometry?.location) {
+                                setDestination({
+                                    latitude: details.geometry.location.lat,
+                                    longitude: details.geometry.location.lng
+                                });
+                            }
                         }}
                         query={{
                             key: GOOGLE_MAP_KEY2,
-                            language: "es",
+                            language: 'es',
                         }}
-                        debounce={300}
-                        minLength={3}
-                        fetchDetails={true}
+                        styles={{
+                            container: {
+                                flex: 1,
+                            },
+                            textInput: {
+                                height: 40,
+                                borderRadius: 5,
+                                paddingVertical: 5,
+                                paddingHorizontal: 10,
+                                fontSize: 15,
+                                flex: 1,
+                            },
+                        }}
                     />
                 </View>
 
-                
-                    <Mapview
-                        ref={mapRef}
-                        style={styles.map}
-                        region={{
+                <Mapview
+                    ref={mapRef}
+                    style={styles.map}
+                    initialRegion={origin}
+                    showsUserLocation={true}
+                    showsMyLocationButton={true}
+                    followsUserLocation={true}
+                    onPress={(e) => {
+                        const newCoordinate = e.nativeEvent.coordinate;
+                        setDestination(newCoordinate);
+                    }}
+                    onMapReady={() => {
+                        console.log("Mapa cargado correctamente");
+                    }}
+                    onError={(error) => {
+                        console.error("Error en el mapa:", error);
+                    }}
+                >
+                    <Marker
+                        coordinate={{
                             latitude: origin.latitude,
-                            longitude: origin.longitude,
-                            latitudeDelta: 0.36,
-                            longitudeDelta: 0.36,
+                            longitude: origin.longitude
                         }}
-                        onPress={(e) => setDestination(e.nativeEvent.coordinate)}
-                    >
-                        <Marker
-                            title="Origen"
-                            description="Lugar de inicio"
-                            draggable
-                            coordinate={origin}
-                            onDragEnd={(e) => setOrigin(e.nativeEvent.coordinate)}
-                        />
-                        {destination && <Marker coordinate={destination} />}
-                        {userLocation && destination && (
-                            <Marker
-                                coordinate={userLocation}
-                                title="Mi ubicación"
-                                description="Ubicación actual del usuario"
-                                pinColor="#67a0ff"
-                            />
-                        )}
+                        title="Origen"
+                        description="Lugar de inicio"
+                        draggable
+                        onDragEnd={(direction) => {
+                            const newCoordinate = direction.nativeEvent.coordinate;
+                            setOrigin({
+                                ...origin,
+                                latitude: newCoordinate.latitude,
+                                longitude: newCoordinate.longitude
+                            });
+                        }}
+                    />
 
-                        {routeCoordinates.length > 0 && (
-                            <Polyline
-                                coordinates={routeCoordinates}
-                                strokeWidth={4}
-                                strokeColor="#67a0ff"
-                            />
-                        )}
-                    </Mapview>             
+                    {destination && (
+                        <Marker
+                            coordinate={destination}
+                            title="Destino"
+                            description="Lugar de destino"
+                        />
+                    )}
+
+                    {routeCoordinates.length > 0 && (
+                        <Polyline
+                            coordinates={routeCoordinates}
+                            strokeWidth={4}
+                            strokeColor="#67a0ff"
+                        />
+                    )}
+                </Mapview>
 
                 <View style={styles.bottomContainer}>
                     <View style={styles.timeContainer}>
                         <Text style={styles.timeLabel}>Tiempo</Text>
                         <Text style={styles.timeValue}>{time}</Text>
                     </View>
-                    <TouchableOpacity style={styles.shareButton} onPress={handleShareLocation}>
+                    <TouchableOpacity 
+                        style={styles.shareButton} 
+                        onPress={handleShareLocation}
+                    >
                         <Text style={styles.shareButtonText}>Compartir Ubicación</Text>
                     </TouchableOpacity>
                 </View>
@@ -353,10 +384,17 @@ const Monitoreo = () => {
 
             {destination && (
                 <View style={styles.buttonsContainer}>
-                    <TouchableOpacity style={styles.finalizarButton} onPress={handleFinalizarViaje}>
+                    <TouchableOpacity
+                        style={styles.finalizarButton}
+                        onPress={handleFinalizarViaje}
+                    >
                         <Text style={styles.buttonText}>Finalizar Viaje</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.cancelarButton} onPress={cancelViaje}>
+
+                    <TouchableOpacity 
+                        style={styles.cancelarButton} 
+                        onPress={cancelViaje}
+                    >
                         <Text style={styles.buttonText}>Cancelar Viaje</Text>
                     </TouchableOpacity>
                 </View>
@@ -370,12 +408,20 @@ const Monitoreo = () => {
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContainer}>
-                        <Text style={styles.modalText}>¿Seguro que quieres compartir tu ubicación?</Text>
+                        <Text style={styles.modalText}>
+                            ¿Seguro que quieres compartir tu ubicación?
+                        </Text>
                         <View style={styles.modalButtons}>
-                            <TouchableOpacity style={styles.yesButton} onPress={handleConfirm}>
+                            <TouchableOpacity 
+                                style={styles.yesButton} 
+                                onPress={handleConfirm}
+                            >
                                 <Text style={styles.yesButtonText}>Sí</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.noButton} onPress={handleCancel}>
+                            <TouchableOpacity 
+                                style={styles.noButton} 
+                                onPress={handleCancel}
+                            >
                                 <Text style={styles.noButtonText}>No</Text>
                             </TouchableOpacity>
                         </View>
