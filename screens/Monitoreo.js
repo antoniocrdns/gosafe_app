@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Share, Alert, Dimensions } from "react-native";
 import * as Location from 'expo-location';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -8,9 +8,9 @@ import Mapview, { Marker, Polyline } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import api from "../utils/api";
 import { useAuth } from '../context/AuthContext';
+import debounce from "lodash.debounce";
 
 const Monitoreo = () => {
-
     const [modalVisible, setModalVisible] = useState(false);
     const [origin, setOrigin] = useState({
         latitude: 32.436087,
@@ -24,12 +24,25 @@ const Monitoreo = () => {
     const [direccionFin, setDireccionFin] = useState("");
     const [viajeData, setViajeData] = useState(null);
     const [routeCoordinates, setRouteCoordinates] = useState([]); // Almacenar las coordenadas de la ruta
+    const [isMapReady, setIsMapReady] = useState(false);
+    const [searching, setSearching] = useState(false);
 
     const { user } = useAuth();
-
     const searchRef = useRef(null);
-
     const GOOGLE_MAP_KEY2 = "AIzaSyAvSJwfk_of_K86P7cy4jAiaKuwXJ7925E";
+    const mapRef = useRef(null);
+
+        // Efecto para mantener la vista del mapa limitada a 40 km
+        useEffect(() => {
+            if (userLocation && mapRef.current) {
+                mapRef.current.animateToRegion({
+                    latitude: userLocation.latitude,
+                    longitude: userLocation.longitude,
+                    latitudeDelta: 0.36, // Aproximadamente 40 km
+                    longitudeDelta: 0.36,
+                });
+            }
+        }, [userLocation]);
 
     // Obtener permisos y la ubicación actual
     useEffect(() => {
@@ -46,6 +59,7 @@ const Monitoreo = () => {
             };
             setOrigin(current); // Establece la ubicación inicial de origen
             setUserLocation(current); // Establece la ubicación inicial del usuario
+            setIsMapReady(true);
         };
 
         getLocationPermission();
@@ -59,11 +73,11 @@ const Monitoreo = () => {
                 return;
             }
 
-            const subscription = Location.watchPositionAsync(
+            const subscription = await Location.watchPositionAsync(
                 {
                     accuracy: Location.Accuracy.High,
-                    timeInterval: 1000, // Actualización cada segundo
-                    distanceInterval: 1, // Actualización cada metro
+                    timeInterval: 3000, // Actualización cada 3 segundos
+                    distanceInterval: 50, // Actualización cada 50 metros
                 },
                 (location) => {
                     setUserLocation(location.coords);
@@ -76,21 +90,20 @@ const Monitoreo = () => {
         const subscription = watchLocation();
         
         return () => {
-            if (subscription) {
+            if (subscription && subscription.remove) {
                 subscription.remove();
             }
         };
     }, []);
 
     // Obtener tiempo, distancia y ruta del viaje
-    const getTravelData = async (origin, destination) => {
+    const getTravelData = useCallback( debounce (async (origin, destination) => {
         const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAP_KEY2}`;
         try {
             const response = await fetch(url);
             const data = await response.json();
             const duration = data.routes[0].legs[0].duration.text;
             const distance = data.routes[0].legs[0].distance.text;
-
             const timeInMinutes = parseInt(duration.split(' ')[0]);  // Convertir el tiempo a número (en minutos)
             const distanceInKm = parseFloat(distance.split(' ')[0]); // Convertir la distancia a número (en kilómetros)
 
@@ -117,7 +130,8 @@ const Monitoreo = () => {
         } catch (error) {
             console.error("Error al obtener los datos del viaje:", error);
         }
-    };
+    }, 1000),
+    []);
 
     // Decodificar las coordenadas de la ruta de la respuesta de Google Maps
     const decodePolyline = (encoded) => {
@@ -159,6 +173,7 @@ const Monitoreo = () => {
             getTravelData(origin, destination);
         }
     }, [origin, destination]);
+
 
     const handleShareLocation = () => {
         setModalVisible(true);
@@ -223,16 +238,15 @@ const Monitoreo = () => {
         Poppins_700Bold,
     });
 
-    // Usar SplashScreen para mostrar la pantalla de carga mientras las fuentes no estén cargadas
     useEffect(() => {
         if (fontsLoaded) {
-            SplashScreen.hide(); // Ocultar el splash screen cuando las fuentes están cargadas
+            SplashScreen.hide();
         }
     }, [fontsLoaded]);
 
     if (!fontsLoaded) {
-        SplashScreen.preventAutoHideAsync(); // Evitar que el splash screen se oculte automáticamente
-        return null; // Retornar null mientras las fuentes no están listas
+        SplashScreen.preventAutoHideAsync();
+        return null;
     }
 
     const locationUrl = userLocation
@@ -258,8 +272,6 @@ const Monitoreo = () => {
                 console.log(error.message);
                 Alert.alert("No se pudo compartir la ubicación. Intentelo de nuevo.");
             }
-        } else {
-            Alert.alert("Aún no se ha obtenido la ubicación.");
         }
     };
 
@@ -269,73 +281,65 @@ const Monitoreo = () => {
             <View style={styles.formContainer}>
                 <View style={styles.destinationContainer}>
                     <View style={styles.iconContainer}>
-                        <Entypo name="location-pin" size={24} color="white" />
+                        <Entypo name="location-pin" size={24} color="#fffafa" />
                     </View>
-
-                    {/* Buscador de ubicaciones */}
                     <GooglePlacesAutocomplete
                         ref={searchRef}
-                        fetchDetails={true}
-                        placeholder="Buscar dirección"
+                        placeholder="Buscar destino"
                         onPress={(data, details = null) => {
-                            let destinationCoord = {
-                                latitude: details?.geometry?.location.lat,
-                                longitude: details?.geometry?.location.lng,
-                            };
-                            setDestination(destinationCoord);
+                            setDestination({
+                                latitude: details.geometry.location.lat,
+                                longitude: details.geometry.location.lng,
+                            });
                         }}
                         query={{
                             key: GOOGLE_MAP_KEY2,
-                            language: 'es',
+                            language: "es",
                         }}
+                        debounce={300}
+                        minLength={3}
+                        fetchDetails={true}
                     />
                 </View>
 
-                {/* Mapa */}
-                <Mapview
-                    style={styles.map}
-                    initialRegion={{
-                        latitude: origin.latitude,
-                        longitude: origin.longitude,
-                        latitudeDelta: 0.09,
-                        longitudeDelta: 0.04,
-                    }}
-                    onPress={(e) => {
-                        const newCoordinate = e.nativeEvent.coordinate;
-                        setDestination(newCoordinate); // Actualiza el destino
-                    }}
-                >
-                    {/* Marcador origen */}
-                    <Marker
-                        title={"Origen"}
-                        description={"Lugar de inicio"}
-                        draggable
-                        coordinate={origin}
-                        onDragEnd={(direction) => setOrigin(direction.nativeEvent.coordinate)}
-                    />
-                    {/* Marcador destino */}
-                    {destination && <Marker coordinate={destination} />}
-                    {/* Marcador que sigue la ubicación del usuario */}
-                    {userLocation && (
+                
+                    <Mapview
+                        ref={mapRef}
+                        style={styles.map}
+                        region={{
+                            latitude: origin.latitude,
+                            longitude: origin.longitude,
+                            latitudeDelta: 0.36,
+                            longitudeDelta: 0.36,
+                        }}
+                        onPress={(e) => setDestination(e.nativeEvent.coordinate)}
+                    >
                         <Marker
-                            coordinate={userLocation}
-                            title="Mi ubicación"
-                            description="Ubicación actual del usuario"
-                            pinColor="#67a0ff"
+                            title="Origen"
+                            description="Lugar de inicio"
+                            draggable
+                            coordinate={origin}
+                            onDragEnd={(e) => setOrigin(e.nativeEvent.coordinate)}
                         />
-                    )}
-                    
-                    {/* Ruta desde origen a destino */}
-                    {routeCoordinates.length > 0 && (
-                        <Polyline
-                            coordinates={routeCoordinates}
-                            strokeWidth={4}
-                            strokeColor='#67a0ff'
-                        />
-                    )}
-                </Mapview>
+                        {destination && <Marker coordinate={destination} />}
+                        {userLocation && destination && (
+                            <Marker
+                                coordinate={userLocation}
+                                title="Mi ubicación"
+                                description="Ubicación actual del usuario"
+                                pinColor="#67a0ff"
+                            />
+                        )}
 
-                {/* Información de tiempo y distancia */}
+                        {routeCoordinates.length > 0 && (
+                            <Polyline
+                                coordinates={routeCoordinates}
+                                strokeWidth={4}
+                                strokeColor="#67a0ff"
+                            />
+                        )}
+                    </Mapview>             
+
                 <View style={styles.bottomContainer}>
                     <View style={styles.timeContainer}>
                         <Text style={styles.timeLabel}>Tiempo</Text>
@@ -347,25 +351,17 @@ const Monitoreo = () => {
                 </View>
             </View>
 
-            {/* Botones de Finalizar y Cancelar Viaje */}
             {destination && (
                 <View style={styles.buttonsContainer}>
-                    {/* Botón para Finalizar Viaje */}
-                    <TouchableOpacity
-                        style={styles.finalizarButton}
-                        onPress={handleFinalizarViaje}
-                    >
+                    <TouchableOpacity style={styles.finalizarButton} onPress={handleFinalizarViaje}>
                         <Text style={styles.buttonText}>Finalizar Viaje</Text>
                     </TouchableOpacity>
-
-                    {/* Botón para Cancelar Viaje */}
                     <TouchableOpacity style={styles.cancelarButton} onPress={cancelViaje}>
                         <Text style={styles.buttonText}>Cancelar Viaje</Text>
                     </TouchableOpacity>
                 </View>
             )}
 
-            {/* Modal de confirmación */}
             <Modal
                 visible={modalVisible}
                 transparent
