@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "gosafe_app",
+    "name": "Go Safe",
     "slug": "gosafe_app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/adaptive-icon.png",
+    "icon": "./assets/icono-app.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icono-app.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.antoniocrdns.gosafe_app",

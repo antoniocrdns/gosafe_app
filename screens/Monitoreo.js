@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
         fontSize: width * 0.1,
         color: "#fffafa",
         fontWeight: "bold",
-        marginTop: height * 0.03,
+        marginTop: height * 0.02,
         alignSelf: "flex-start",
         marginLeft: width * 0.02,
     },
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
     buttonsContainer: {
         width: "100%",
         alignItems: "center",
-        marginTop: height * 0.005,
+        marginTop: height * 0.001,
     },
     finalizarButton: {
         backgroundColor: "#67a0ff",
