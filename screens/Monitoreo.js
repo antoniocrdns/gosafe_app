@@ -27,6 +27,9 @@ const Monitoreo = () => {
     const [viajeData, setViajeData] = useState(null);
     const [routeCoordinates, setRouteCoordinates] = useState([]);
     const [error, setError] = useState(null);
+    const [hours, setHours] = useState(null);
+    const [minutes, setMinutes] = useState(null);
+
 
     const { user } = useAuth();
     const searchRef = useRef(null);
@@ -108,6 +111,27 @@ const Monitoreo = () => {
         };
     }, []);
 
+    const parseDuration = (duration) => {
+        // Buscamos las partes que contienen 'hour' y 'min' en la cadena
+        const parts = duration.split(" ");
+    
+        // Variables para almacenar horas y minutos
+        let hours = "";
+        let minutes = "";
+    
+        // Recorremos las partes y asignamos horas y minutos según el caso
+        if (parts.length > 1) {
+            if (parts[1].includes("hour")) {
+                hours = `${parts[0]} hrs`;
+            }
+            if (parts[parts.length - 1].includes("min")) {
+                minutes = `${parts[parts.length - 2]} mins`;
+            }
+        }
+    
+        return { hours, minutes };
+    };
+
     const getTravelData = async (origin, destination) => {
         const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAP_KEY2}`;
         try {
@@ -124,10 +148,17 @@ const Monitoreo = () => {
             const timeInMinutes = parseInt(duration.split(' ')[0]);
             const distanceInKm = parseFloat(distance.split(' ')[0]);
 
+            const { hours, minutes } = parseDuration(duration);
+            console.log("horas:" + hours);
+            console.log("minutos:" + minutes);
+
             setTime(duration);
             setDistance(distance);
             setDireccionInicio(data.routes[0].legs[0].start_address);
             setDireccionFin(data.routes[0].legs[0].end_address);
+
+            setHours(hours);
+            setMinutes(minutes);
 
             const points = data.routes[0].overview_polyline.points;
             const decodedPath = decodePolyline(points);
@@ -207,6 +238,8 @@ const Monitoreo = () => {
     const cancelViaje = () => {
         setDestination(null);
         setTime("");
+        setHours("");
+        setMinutes("");
         setDistance("0.00");
         setDireccionInicio("");
         setDireccionFin("");
@@ -371,7 +404,8 @@ const Monitoreo = () => {
                 <View style={styles.bottomContainer}>
                     <View style={styles.timeContainer}>
                         <Text style={styles.timeLabel}>Tiempo</Text>
-                        <Text style={styles.timeValue}>{time}</Text>
+                        <Text style={styles.timeValue}>{hours}</Text>
+                        <Text style={styles.timeValue}>{minutes}</Text>
                     </View>
                     <TouchableOpacity 
                         style={styles.shareButton} 
@@ -445,7 +479,7 @@ const styles = StyleSheet.create({
         width: "100%",
         backgroundColor: "#fffafa",
         borderRadius: width * 0.04,
-        padding: width * 0.05,
+        padding: width * 0.04,
         marginVertical: height * 0.02,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -572,7 +606,7 @@ const styles = StyleSheet.create({
     },
     timeContainer: {
         alignItems: "center",
-        marginRight: width * 0.05,
+        marginRight: width * 0.07,
         marginLeft: width * 0.02,
         maxWidth: width * 0.8, // Limitar el ancho máximo del contenedor
     },
@@ -583,7 +617,7 @@ const styles = StyleSheet.create({
         marginBottom: height * -0.01,
     },
     timeValue: {
-        fontSize: width * 0.08,
+        fontSize: width * 0.07,
         fontWeight: "bold",
         fontFamily: "Poppins_700Bold",
         color: "#1c1919",
@@ -602,8 +636,8 @@ const styles = StyleSheet.create({
         paddingVertical: height * 0.015,
         paddingHorizontal: width * 0.06,
         borderRadius: width * 0.04,
-        marginTop: height * 0.04,
-        marginBottom: height * 0.04,
+        marginTop: height * 0.02,
+        marginBottom: height * 0.02,
         width: "80%",
         alignItems: "center",
     },
